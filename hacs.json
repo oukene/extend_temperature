@@ -1,0 +1,5 @@
+{
+  "name": "Extend Temperature",
+  "domains": ["sensor"],
+  "render_readme": true
+}

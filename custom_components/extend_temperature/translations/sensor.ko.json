@@ -1,0 +1,20 @@
+{
+    "state": {
+        "extend_temperature__humidi_state": {
+          "little_dry": "약간 건조",
+          "very_good": "매우 좋음",
+          "good": "좋음",
+          "little_wet": "조금 습함",
+          "wet": "습함",
+          "very_wet": "매우 습함"
+        },
+        "extend_temperature__heatindex_state": {
+          "good": "좋음",
+          "careful": "주의",
+          "very_careful": "매우 주의",
+          "danger": "위험",
+          "very_danger": "매우 위험",
+          "heatindex_state": "열지수 상태"
+        }
+      }
+}
