@@ -47,15 +47,15 @@ ATTR_WIND = 'wind'
 
 
 SENSOR_TYPES = {
-    'temperature': [DEVICE_CLASS_TEMPERATURE, 'Temperature', '°C'],
-    'relativehumidity': [DEVICE_CLASS_HUMIDITY, 'Relative Humidity', '%'],
-    'absolutehumidity': [DEVICE_CLASS_HUMIDITY, 'Absolute Humidity', 'g/m³'],
-    'heatindex': [DEVICE_CLASS_TEMPERATURE, 'Heat Index', '°C'],
-    'apparent_temperature': [DEVICE_CLASS_TEMPERATURE, 'Apparent Temperature', '°C'],
-    'dewpoint': [DEVICE_CLASS_TEMPERATURE, 'Dew Point', '°C'],
-    'humidi_state': [DOMAIN + "__humidi_state", 'Humidity State', None],
-    'heatindex_state': [DOMAIN + "__heatindex_state", 'Heat Index State', None],
-    'wind_speed': [None, 'Wind Speed', 'm/s'],
+    'temperature': [DEVICE_CLASS_TEMPERATURE, '°C'],
+    'relativehumidity': [DEVICE_CLASS_HUMIDITY, '%'],
+    'absolutehumidity': [DEVICE_CLASS_HUMIDITY, 'g/m³'],
+    'heatindex': [DEVICE_CLASS_TEMPERATURE, '°C'],
+    'apparent_temperature': [DEVICE_CLASS_TEMPERATURE, '°C'],
+    'dewpoint': [DEVICE_CLASS_TEMPERATURE, '°C'],
+    'humidi_state': [DOMAIN + "__humidi_state", None],
+    'heatindex_state': [DOMAIN + "__heatindex_state", None],
+    'wind_speed': [None, 'm/s'],
 }
 
 # See cover.py for more details.
@@ -65,7 +65,7 @@ SENSOR_TYPES = {
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
     
-    currentLocale = 1
+    currentLocale = "en"
     if(locale.getlocale()[0] == 'Korean_Korea'):
         currentLocale = "ko"
     else:
@@ -80,7 +80,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
     for sensor_type in SENSOR_TYPES:
         if wind_entity == None:
-            if sensor_type == "apparent_temperature":
+            if sensor_type == "apparent_temperature" or sensor_type == "wind_speed":
                 continue
         new_devices.append(
                 ExtendSensor(
@@ -195,7 +195,7 @@ class ExtendSensor(SensorBase):
         self.entity_id = async_generate_entity_id(ENTITY_ID_FORMAT, "{}_{}".format(device.device_id, sensor_type), hass=hass)
         self._name = "{} {}".format(device.device_id, TRANSLATION[currentLocale][sensor_type])
         #self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
-        self._unit_of_measurement = SENSOR_TYPES[sensor_type][2]
+        self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
         self._state = None
         self._device_state_attributes = {}
         self._icon = None
@@ -234,7 +234,7 @@ class ExtendSensor(SensorBase):
             if _is_valid_state(wind_state):
                 self._wind = float(wind_state.state)
         
-        #self.update()
+        self.update()
 
     def temperature_state_listener(self, entity, old_state, new_state):
         """Handle temperature device state changes."""
@@ -404,7 +404,8 @@ class ExtendSensor(SensorBase):
     def update(self):
         """Update the state."""
         value = None
-        if not math.isnan(self._temperature) and not math.isnan(self._humidity) and not math.isnan(self._wind):
+
+        if not math.isnan(self._temperature) and not math.isnan(self._humidity):
             if self._sensor_type == "dewpoint":
                 value = self.computeDewPoint(self._temperature, self._humidity)
             if self._sensor_type == "heatindex":
@@ -413,21 +414,21 @@ class ExtendSensor(SensorBase):
                 value = self.computeHumidiState(self._temperature, self._humidity)
             elif self._sensor_type == "absolutehumidity":
                 value = self.computeAbsoluteHumidity(self._temperature, self._humidity)
-            elif self._sensor_type == "apparent_temperature":
-                value = self.computeApparentTemperature(self._temperature, self._wind)
             elif self._sensor_type == "heatindex_state":
                 value = self.computeHeatIndexState(self._temperature, self._humidity)
             elif self._sensor_type == "relativehumidity":
                 value = self._humidity
             elif self._sensor_type == "temperature":
                 value = self._temperature
-            elif self._sensor_type == "wind_speed":
+            elif self._sensor_type == "apparent_temperature" and not math.isnan(self._wind):
+                value = self.computeApparentTemperature(self._temperature, self._wind)
+                self._device_state_attributes[ATTR_WIND] = self._wind    
+            elif self._sensor_type == "wind_speed" and not math.isnan(self._wind):
                 value = self._wind
 
-        self._state = value
-        self._device_state_attributes[ATTR_TEMPERATURE] = self._temperature
-        self._device_state_attributes[ATTR_HUMIDITY] = self._humidity
-        self._device_state_attributes[ATTR_WIND] = self._wind
+            self._state = value
+            self._device_state_attributes[ATTR_TEMPERATURE] = self._temperature
+            self._device_state_attributes[ATTR_HUMIDITY] = self._humidity
 
     async def async_update(self):
         """Update the state."""

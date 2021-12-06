@@ -9,7 +9,7 @@
                 "data": {
                     "device_name": "input device name",
                     "temperature_entity": "input temperature entity",
-                    "humidity_entity": "input humidity entity",
+                    "humidity_entity": "input relative humidity entity",
                     "wind_entity": "input wind entity(m/s)"
                 }
             }

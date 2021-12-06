@@ -1,6 +1,6 @@
 {
     "state": {
-        "Extend_Temperature__humidi_state": {
+        "extend_temperature__humidi_state": {
           "little_dry": "little dry",
           "very_good": "very good",
           "good": "good",
@@ -8,7 +8,7 @@
           "wet": "wet",
           "very_wet": "very wet"
         },
-        "Extend_Temperature__heatindex_state": {
+        "extend_temperature__heatindex_state": {
           "good": "good",
           "careful": "careful",
           "very_careful": "very careful",
