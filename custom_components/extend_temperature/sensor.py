@@ -7,7 +7,8 @@
 # battery), the unit_of_measurement should match what's expected.
 import random
 import logging
-
+import time
+import homeassistant
 from typing import Optional
 from homeassistant.const import (
     DEVICE_CLASS_BATTERY,
@@ -233,8 +234,7 @@ class ExtendSensor(SensorBase):
             wind_state = hass.states.get(wind_entity)
             if _is_valid_state(wind_state):
                 self._wind = float(wind_state.state)
-        
-        self.update()
+
 
     def temperature_state_listener(self, entity, old_state, new_state):
         """Handle temperature device state changes."""
