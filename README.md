@@ -5,7 +5,7 @@
 설치시 온도 습도는 필수이고 풍속은 옵션입니다. 풍속을 입력하게 되면 체감온도가 추가 됩니다.
 
 
-주의 : 최초 설치 후 HA를 재부팅 하거나 센서의 값이 한번 변경된 이후부터 작동합니다!!
+<font color=red>주의 : 최초 설치 후 HA를 재부팅 하거나 센서의 값이 한번 변경된 이후부터 작동합니다!!</font>
 
 
 ![sensors.jpg](https://raw.githubusercontent.com/oukene/extend_temperature/main/images/sensors.jpg)
