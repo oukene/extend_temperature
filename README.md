@@ -4,9 +4,9 @@
 
 설치시 온도 습도는 필수이고 풍속은 옵션입니다. 풍속을 입력하게 되면 체감온도가 추가 됩니다.
 
-
-<font color=red>주의 : 최초 설치 후 HA를 재부팅 하거나 센서의 값이 한번 변경된 이후부터 작동합니다!!</font>
-
+<br><br>
+### 주의 : 최초 설치 후 HA를 재부팅 하거나 센서의 값이 한번 변경된 이후부터 작동합니다!!
+<br><br>
 
 ![sensors.jpg](https://raw.githubusercontent.com/oukene/extend_temperature/main/images/sensors.jpg)
 
@@ -43,7 +43,7 @@ HACS 의 custom repository에 https://github.com/oukene/extend_temperature 주�
 History
 <br>
 v1.0.0 - 2021.12.06 - 최초 작성
-
+v1.0.1 - 2021.12.07 - HA 재부팅 시 버그 수정
 ---
 <br><br><br>
 
