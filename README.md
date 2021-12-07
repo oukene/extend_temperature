@@ -42,8 +42,9 @@ HACS 의 custom repository에 https://github.com/oukene/extend_temperature 주�
 ---
 History
 <br>
-v1.0.0 - 2021.12.06 - 최초 작성
-v1.0.1 - 2021.12.07 - HA 재부팅 시 버그 수정
+v1.0.0 - 2021.12.06 - 최초 작성<br>
+v1.0.0 - 2021.12.06 - 최초 작성<br>
+
 ---
 <br><br><br>
 
