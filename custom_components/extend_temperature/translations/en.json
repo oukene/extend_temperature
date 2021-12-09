@@ -8,11 +8,27 @@
             "user": {
                 "data": {
                     "device_name": "input device name",
-                    "temperature_entity": "input temperature entity",
+                    "indoor_temp_entity": "input indoor temperature entity",
                     "humidity_entity": "input relative humidity entity",
-                    "wind_entity": "input wind entity(m/s)"
+                    "outdoor_temp_entity": "input outdoor temperature entity",
+                    "wind_entity": "input wind entity(m/s)",
+                    "mold_calib_factor": "input calibration factor(1~20)"
                 }
             }
         }
+   },
+   "options": {
+       "step": {
+           "init": {
+                "title": "Extend Temperature sensor Options",
+                "data": {
+                    "indoor_temp_entity": "input indoor temperature entity",
+                    "humidity_entity": "input relative humidity entity",
+                    "outdoor_temp_entity": "input outdoor temperature entity",
+                    "wind_entity": "input wind entity(m/s)",
+                    "mold_calib_factor": "input calibration factor(1~20)"
+               }
+           }
+       }
    }
 }

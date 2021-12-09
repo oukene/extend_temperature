@@ -1,12 +1,13 @@
 """Config flow for Hello World integration."""
 import logging
+from homeassistant.const import CONF_ID
 
 import voluptuous as vol
 
 from homeassistant import config_entries, core, exceptions
+from homeassistant.core import callback
 
-from .const import DOMAIN  # pylint:disable=unused-import
-from .const import VERSION
+from .const import *  # pylint:disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,14 +22,6 @@ _LOGGER = logging.getLogger(__name__)
 # quite work as documented and always gave me the "Lokalise key references" string
 # (in square brackets), rather than the actual translated value. I did not attempt to
 # figure this out or look further into it.
-DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required("device_name"): str,
-        vol.Required("temperature_entity"): str,
-        vol.Required("humidity_entity"): str,
-        vol.Optional("wind_entity"): str
-    }
-)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -52,10 +45,65 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         
         if user_input is not None:
-            return self.async_create_entry(title=user_input["device_name"], data=user_input)
+            return self.async_create_entry(title=user_input[CONF_DEVICE_NAME], data=user_input)
 
         # If there is no user input or there were errors, show the form again, including any errors that were found with the input.
         return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
+            step_id="user", 
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_DEVICE_NAME): str,
+                    vol.Required(CONF_INDOOR_TEMP_ENTITY): str,
+                    vol.Required(CONF_HUMIDITY_ENTITY): str,
+                }
+            ),
+            errors=errors
         )
 
+    async def async_step_import(self, user_input=None):
+        """Handle configuration by yaml file."""
+        await self.async_set_unique_id(user_input[CONF_DEVICE_NAME])
+        for entry in self._async_current_entries():
+            if entry.unique_id == self.unique_id:
+                self.hass.config_entries.async_update_entry(entry, data=user_input)
+                self._abort_if_unique_id_configured()
+        _LOGGER.error("async_step_import, call async_create_entry")
+        _LOGGER.error("userinput : %s", user_input)
+        return self.async_create_entry(title=user_input[CONF_DEVICE_NAME], data=user_input)
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Handle a option flow."""
+        return OptionsFlowHandler(config_entry)
+
+
+class OptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle a option flow for Naver Weather."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry):
+        """Initialize options flow."""
+        _LOGGER.error("init!!!")
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Handle options flow."""
+        conf = self.config_entry
+        if conf.source == config_entries.SOURCE_IMPORT:
+            return self.async_show_form(step_id="init", data_schema=None)
+        if user_input is not None:
+            _LOGGER.error("OptionsFlowHandler, call async_create_entry")
+            _LOGGER.error("userinput : %s", user_input)
+            return self.async_create_entry(title="", data=user_input)
+
+        options_schema = {}
+        data_list = [CONF_INDOOR_TEMP_ENTITY, CONF_HUMIDITY_ENTITY, CONF_OUTDOOR_TEMP_ENTITY, CONF_WIND_ENTITY, CONF_MOLD_CALIB_FACTOR]
+        for name, default, validation in OPTIONS:
+            to_default = conf.options.get(name, default)
+            if name in data_list and conf.options.get(name, default) == default:
+                to_default = conf.data.get(name, default)
+            key = vol.Optional(name, default=to_default)
+            options_schema[key] = validation
+        return self.async_show_form(
+            step_id="init", data_schema=vol.Schema(options_schema)
+        )

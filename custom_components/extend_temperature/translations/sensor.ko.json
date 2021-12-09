@@ -13,8 +13,7 @@
           "careful": "주의",
           "very_careful": "매우 주의",
           "danger": "위험",
-          "very_danger": "매우 위험",
-          "heatindex_state": "열지수 상태"
+          "very_danger": "매우 위험"
         }
       }
 }

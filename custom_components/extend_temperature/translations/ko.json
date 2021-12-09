@@ -8,11 +8,27 @@
             "user": {
                 "data": {
                     "device_name": "\uC0DD\uC131\uD560 \uAE30\uAE30\uC758 \uC774\uB984\uC744 \uC785\uB825\uD558\uC138\uC694",
-                    "temperature_entity": "\uC628\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
+                    "indoor_temp_entity": "\uC2E4\uB0B4 \uC628\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
                     "humidity_entity": "\uC0C1\uB300\uC2B5\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
-                    "wind_entity": "\uD48D\uC18D \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694(m/s)"
+                    "outdoor_temp_entity": "\uC2E4\uC678 \uC628\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
+                    "wind_entity": "\uD48D\uC18D \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694(m/s)",
+                    "mold_calib_factor": "\uACB0\uB85C \uBCF4\uC815\uAC12\uC744 \uC785\uB825\uD558\uC138\uC694(1~20)"
                 }
             }
         }
+   },
+   "options": {
+       "step": {
+           "init": {
+                "title": "\uD655\uC7A5 \uC628\uB3C4 \uC13C\uC11C \uC635\uC158",
+                "data": {
+                    "indoor_temp_entity": "\uC2E4\uB0B4 \uC628\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
+                    "humidity_entity": "\uC0C1\uB300\uC2B5\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
+                    "outdoor_temp_entity": "\uC2E4\uC678 \uC628\uB3C4 \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694",
+                    "wind_entity": "\uD48D\uC18D \uAD6C\uC131\uC694\uC18C\uC758 id\uB97C \uC785\uB825\uD558\uC138\uC694(m/s)",
+                    "mold_calib_factor": "\uACB0\uB85C \uBCF4\uC815\uAC12\uC744 \uC785\uB825\uD558\uC138\uC694(1~20)"
+                }
+           }
+       }
    }
 }
