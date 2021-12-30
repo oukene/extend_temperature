@@ -5,12 +5,14 @@
 # to display it in the UI (for know types). The unit_of_measurement property tells HA
 # what the unit is, so it can display the correct range. For predefined types (such as
 # battery), the unit_of_measurement should match what's expected.
+import decimal
 import random
 import logging
 import time
 import homeassistant
 from typing import Optional
 from homeassistant.const import (
+    CONF_TEMPERATURE_UNIT,
     DEVICE_CLASS_BATTERY,
     PERCENTAGE,
     DEVICE_CLASS_ILLUMINANCE,
@@ -20,6 +22,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE, DEVICE_CLASS_HUMIDITY, ATTR_TEMPERATURE, TEMP_FAHRENHEIT,
     CONF_UNIQUE_ID,
 )
+
 from homeassistant.components.sensor import ENTITY_ID_FORMAT, \
     PLATFORM_SCHEMA, DEVICE_CLASSES_SCHEMA
 
@@ -29,7 +32,9 @@ import asyncio
 from homeassistant import components
 from homeassistant import util
 from homeassistant.helpers.entity import Entity
-from .const import DOMAIN, VERSION, TRANSLATION
+
+from homeassistant.components.mold_indicator.sensor import ATTR_CRITICAL_TEMP, ATTR_DEWPOINT
+from .const import *
 from homeassistant.exceptions import TemplateError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity, async_generate_entity_id
@@ -38,26 +43,10 @@ from homeassistant.helpers.event import async_track_state_change
 import locale
 import math
 
+MAGNUS_K2 = 17.62
+MAGNUS_K3 = 243.12
+
 _LOGGER = logging.getLogger(__name__)
-
-CONF_TEMPERATURE_SENSOR = 'temperature_entity'
-CONF_HUMIDITY_SENSOR = 'humidity_entity'
-CONF_WIND_SENSOR = 'wind_entity'
-ATTR_HUMIDITY = 'humidity'
-ATTR_WIND = 'wind'
-
-
-SENSOR_TYPES = {
-    'temperature': [DEVICE_CLASS_TEMPERATURE, '°C'],
-    'relativehumidity': [DEVICE_CLASS_HUMIDITY, '%'],
-    'absolutehumidity': [DEVICE_CLASS_HUMIDITY, 'g/m³'],
-    'heatindex': [DEVICE_CLASS_TEMPERATURE, '°C'],
-    'apparent_temperature': [DEVICE_CLASS_TEMPERATURE, '°C'],
-    'dewpoint': [DEVICE_CLASS_TEMPERATURE, '°C'],
-    'humidi_state': [DOMAIN + "__humidi_state", None],
-    'heatindex_state': [DOMAIN + "__heatindex_state", None],
-    'wind_speed': [None, 'm/s'],
-}
 
 # See cover.py for more details.
 # Note how both entities for each roller sensor (battry and illuminance) are added at
@@ -65,7 +54,7 @@ SENSOR_TYPES = {
 # required.
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
-    
+
     currentLocale = "en"
     if(locale.getlocale()[0] == 'Korean_Korea'):
         currentLocale = "ko"
@@ -74,23 +63,47 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
     device = Device(config_entry.data.get("device_name"))
 
-    temperature_entity = config_entry.data.get(CONF_TEMPERATURE_SENSOR)
-    humidity_entity = config_entry.data.get(CONF_HUMIDITY_SENSOR)
-    wind_entity = config_entry.data.get(CONF_WIND_SENSOR)
+    inside_temp_entity = config_entry.data.get(CONF_INSIDE_TEMP_ENTITY)
+    humidi_entity = config_entry.data.get(CONF_HUMIDITY_ENTITY)
+    wind_entity = config_entry.options.get(CONF_WIND_ENTITY)
+    outside_temp_entity = config_entry.options.get(CONF_OUTSIDE_TEMP_ENTITY)
+    mold_calib_factor = config_entry.options.get(CONF_MOLD_CALIB_FACTOR)
+    apparent_temp_source_entity = config_entry.options.get(CONF_APPARENT_TEMP_SOURCE_ENTITY)
+    decimal_places = config_entry.options.get(CONF_DECIMAL_PLACES)
+    
+    if None == decimal_places:
+        decimal_places = 2
+
+    if None == mold_calib_factor: 
+        mold_calib_factor = 2.0 
+    else: 
+        mold_calib_factor = (float)(mold_calib_factor)
     new_devices = []
 
     for sensor_type in SENSOR_TYPES:
-        if wind_entity == None:
-            if sensor_type == "apparent_temperature" or sensor_type == "wind_speed":
+        if apparent_temp_source_entity == None or apparent_temp_source_entity == '' or apparent_temp_source_entity == ' ':
+            if sensor_type == STYPE_APPARENT_TEMP:
                 continue
+        if wind_entity == None or wind_entity == '' or wind_entity == ' ':
+            if sensor_type == STYPE_WIND_SPEED or sensor_type == STYPE_APPARENT_TEMP:
+                    continue
+
+        if outside_temp_entity == None or outside_temp_entity == '' or outside_temp_entity == ' ':
+            if sensor_type == STYPE_OUTSIDE_TEMP or sensor_type == STYPE_MOLD_INDICATOR:
+                continue
+        
         new_devices.append(
                 ExtendSensor(
                         hass,
                         device,
-                        temperature_entity,
-                        humidity_entity,
-                        wind_entity,
                         sensor_type,
+                        inside_temp_entity,
+                        humidi_entity,
+                        outside_temp_entity,
+                        wind_entity,
+                        apparent_temp_source_entity,
+                        mold_calib_factor,
+                        decimal_places,
                         device.device_id + sensor_type,
                         currentLocale
                 )
@@ -160,7 +173,6 @@ class Device:
         # >0 is up, <0 is down. This very much just for demonstration.
 
         # Some static information about this device
-        # Some static information about this device
         self.firmware_version = VERSION
         self.model = "Extend Temperature"
         self.manufacturer = "Extend Temperature"
@@ -188,7 +200,8 @@ class Device:
 class ExtendSensor(SensorBase):
     """Representation of a Thermal Comfort Sensor."""
 
-    def __init__(self, hass, device, temperature_entity, humidity_entity, wind_entity, sensor_type, unique_id, currentLocale):
+    def __init__(self, hass, device, sensor_type, inside_temp_entity, humidi_entity, outside_temp_entity, wind_entity,
+                        apparent_temp_source_entity, mold_calib_factor, decimal_places, unique_id, currentLocale):
         """Initialize the sensor."""
         super().__init__(device)
 
@@ -201,79 +214,173 @@ class ExtendSensor(SensorBase):
         self._device_state_attributes = {}
         self._icon = None
         self._entity_picture = None
-        self._temperature_entity = temperature_entity
-        self._humidity_entity = humidity_entity
+        self._inside_temp_entity = inside_temp_entity
+        self._humidi_entity = humidi_entity
+        self._outside_temp_entity = outside_temp_entity
+        self._apparent_temp_source_entity = apparent_temp_source_entity
         self._wind_entity = wind_entity
+        self._mold_calib_factor = mold_calib_factor
+        self._decimal_places = decimal_places
         self._device_class = SENSOR_TYPES[sensor_type][0]
         self._sensor_type = sensor_type
-        self._temperature = None
+        self._inside_temp = None
+        self._outside_temp = None
         self._humidity = None
         self._unique_id = unique_id
         self._device = device
         self._wind = None
+        self._apparent_temp_source = None
 
-        async_track_state_change(
-            self.hass, self._temperature_entity, self.temperature_state_listener)
-
-        async_track_state_change(
-            self.hass, self._humidity_entity, self.humidity_state_listener)
+        if sensor_type == STYPE_WIND_SPEED:
+            self._icon = "mdi:weather-windy"
         
-        if wind_entity != None:
-            async_track_state_change(
-                self.hass, self._wind_entity, self.wind_state_listener)
+        if self._wind_entity != None:
+            self._wind = self.setStateListener(self._wind_entity, self.wind_state_listener)
 
-        temperature_state = hass.states.get(temperature_entity)
-        if _is_valid_state(temperature_state):
-            self._temperature = float(temperature_state.state)
+        if self._apparent_temp_source_entity != None:
+            self._apparent_temp_source = self.setStateListener(self._apparent_temp_source_entity, self.apparent_temp_source_state_listener)
 
-        humidity_state = hass.states.get(humidity_entity)
-        if _is_valid_state(humidity_state):
-            self._humidity = float(humidity_state.state)
+        if self._outside_temp_entity != None:
+            self._outside_temp = self.setStateListener(self._outside_temp_entity, self.outside_temp_state_listener)
 
-        if wind_entity != None:
-            wind_state = hass.states.get(wind_entity)
-            if _is_valid_state(wind_state):
-                self._wind = float(wind_state.state)
+        self._inside_temp = self.setStateListener(self._inside_temp_entity, self.inside_temp_state_listener)
+        self._humidity = self.setStateListener(self._humidi_entity, self.humidity_state_listener)
 
 
-    def temperature_state_listener(self, entity, old_state, new_state):
-        """Handle temperature device state changes."""
-        if _is_valid_state(new_state):
-            unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
-            temp = util.convert(new_state.state, float)
-            # convert to celsius if necessary
-            if unit == TEMP_FAHRENHEIT:
-                temp = util.temperature.fahrenheit_to_celsius(temp)
-            self._temperature = temp
+    def setStateListener(self, entity, listener):
+        async_track_state_change(
+                self.hass, entity, listener)
+            
+        entity_state = self.hass.states.get(entity)
+        if _is_valid_state(entity_state):
+            return float(entity_state.state)
+            
+    def apparent_temp_source_state_listener(self, entity, old_state, new_state):
+        try:
+            """Handle temperature device state changes."""
+            if _is_valid_state(new_state):
+                unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
+                temp = util.convert(new_state.state, float)
+                # convert to celsius if necessary
+                if unit == TEMP_FAHRENHEIT:
+                    temp = util.temperature.fahrenheit_to_celsius(temp)
+                self._apparent_temp_source = temp
 
-        self.async_schedule_update_ha_state(True)
+            self.async_schedule_update_ha_state(True)
+        except:
+            ''
+
+    def inside_temp_state_listener(self, entity, old_state, new_state):
+        try:
+            """Handle temperature device state changes."""
+            if _is_valid_state(new_state):
+                unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
+                temp = util.convert(new_state.state, float)
+                # convert to celsius if necessary
+                if unit == TEMP_FAHRENHEIT:
+                    temp = util.temperature.fahrenheit_to_celsius(temp)
+                self._inside_temp = temp
+
+            self.async_schedule_update_ha_state(True)
+        except:
+            ''
+
+    def outside_temp_state_listener(self, entity, old_state, new_state):
+        try:
+            """Handle temperature device state changes."""
+            if _is_valid_state(new_state):
+                unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
+                temp = util.convert(new_state.state, float)
+                # convert to celsius if necessary
+                if unit == TEMP_FAHRENHEIT:
+                    temp = util.temperature.fahrenheit_to_celsius(temp)
+                self._outside_temp = temp
+
+            self.async_schedule_update_ha_state(True)
+        except:
+            ''
 
     def humidity_state_listener(self, entity, old_state, new_state):
-        """Handle humidity device state changes."""
-        if _is_valid_state(new_state):
-            self._humidity = float(new_state.state)
+        try:
+            """Handle humidity device state changes."""
+            if _is_valid_state(new_state):
+                self._humidity = float(new_state.state)
 
-        self.async_schedule_update_ha_state(True)
+            self.async_schedule_update_ha_state(True)
+        except:
+            ''
 
     def wind_state_listener(self, entity, old_state, new_state):
-        """Handle humidity device state changes."""
-        if _is_valid_state(new_state):
-            self._wind = float(new_state.state)
+        try:
+            """Handle humidity device state changes."""
+            if _is_valid_state(new_state):
+                self._wind = float(new_state.state)
 
-        self.async_schedule_update_ha_state(True)
+            self.async_schedule_update_ha_state(True)
+        except:
+            ''
 
     def computeDewPoint(self, temperature, humidity):
+        """Calculate the dewpoint for the inside air."""
+        # Use magnus approximation to calculate the dew point
+        alpha = MAGNUS_K2 * temperature / (MAGNUS_K3 + temperature)
+        beta = MAGNUS_K2 * MAGNUS_K3 / (MAGNUS_K3 + temperature)
+        dewpoint = 0
+        if humidity == 0:
+            dewpoint = -50  # not defined, assume very low value
+        else:
+            dewpoint = (
+                MAGNUS_K3
+                * (alpha + math.log(humidity / 100.0))
+                / (beta - math.log(humidity / 100.0))
+            )
+        return round(dewpoint, self._decimal_places)
+
+    def computeCriticalTemp(self, inside_temp, outside_temp, calib_factor):
+        _crit_temp = (
+            outside_temp
+            + (inside_temp - outside_temp) / calib_factor
+        )
+        return round(_crit_temp, self._decimal_places)
+
+    def computeMoldIndicator(self, inside_temp, outside_temp, humidity, calib_factor):
+        """Calculate Mold Indicator"""
+        dewpoint = self.computeDewPoint(inside_temp, humidity)
+        crit_temp = self.computeCriticalTemp(inside_temp, outside_temp, calib_factor)
+        mold = None
+        # Then calculate the humidity at this point
+        alpha = MAGNUS_K2 * crit_temp / (MAGNUS_K3 + crit_temp)
+        beta = MAGNUS_K2 * MAGNUS_K3 / (MAGNUS_K3 + crit_temp)
+
+        crit_humidity = (
+            math.exp(
+                (dewpoint * beta - MAGNUS_K3 * alpha)
+                / (dewpoint + MAGNUS_K3)
+            )
+            * 100.0
+        )
+
+        # check bounds and format
+        if crit_humidity > 100:
+            mold = "100"
+        elif crit_humidity < 0:
+            mold = "0"
+        else:
+            mold = f"{int(crit_humidity):d}"
+
+        return mold
+
         """http://wahiduddin.net/calc/density_algorithms.htm"""
-        A0 = 373.15 / (273.15 + temperature)
-        SUM = -7.90298 * (A0 - 1)
-        SUM += 5.02808 * math.log(A0, 10)
-        SUM += -1.3816e-7 * (pow(10, (11.344 * (1 - 1 / A0))) - 1)
-        SUM += 8.1328e-3 * (pow(10, (-3.49149 * (A0 - 1))) - 1)
-        SUM += math.log(1013.246, 10)
-        VP = pow(10, SUM - 3) * humidity
-        Td = math.log(VP / 0.61078)
-        Td = (241.88 * Td) / (17.558 - Td)
-        return round(Td, 2)
+        #A0 = 373.15 / (273.15 + temperature)
+        #SUM = -7.90298 * (A0 - 1)
+        #SUM += 5.02808 * math.log(A0, 10)
+        #SUM += -1.3816e-7 * (pow(10, (11.344 * (1 - 1 / A0))) - 1)
+        #SUM += 8.1328e-3 * (pow(10, (-3.49149 * (A0 - 1))) - 1)
+        #SUM += math.log(1013.246, 10)
+        #VP = pow(10, SUM - 3) * humidity
+        #Td = math.log(VP / 0.61078)
+        #Td = (241.88 * Td) / (17.558 - Td)
+        #return round(Td, 2)
 
     def toFahrenheit(self, celsius):
         """celsius to fahrenheit"""
@@ -303,7 +410,7 @@ class ExtendSensor(SensorBase):
         elif humidity > 85 and fahrenheit >= 80 and fahrenheit <= 87:
             hi = hi + ((humidity - 85) * 0.1) * ((87 - fahrenheit) * 0.2)
 
-        return round(self.toCelsius(hi), 2)
+        return round(self.toCelsius(hi), self._decimal_places)
 
     def unique_id(self):
         """Return Unique ID string."""
@@ -346,12 +453,12 @@ class ExtendSensor(SensorBase):
         absHumidity *= humidity;
         absHumidity *= 2.1674;
         absHumidity /= absTemperature;
-        return round(absHumidity, 2)
+        return round(absHumidity, self._decimal_places)
 
     def computeApparentTemperature(self, temperature, wind):
         wind_per_hour = wind * 60 * 60 / 1000.0
-        apparent_temperature = 13.12 + 0.6215 * temperature - 11.37 * wind_per_hour ** 0.16 + 0.3965 * 0 * wind_per_hour ** 0.16
-        return round(apparent_temperature, 2)
+        apparent_temperature = 13.12 + 0.6215 * temperature - 11.37 * wind_per_hour ** 0.16 + 0.3965 * wind_per_hour ** 0.16 * temperature
+        return round(apparent_temperature, self._decimal_places)
 
 
     """Sensor Properties"""
@@ -399,40 +506,52 @@ class ExtendSensor(SensorBase):
     def unique_id(self) -> str:
         """Return a unique ID."""
         if self._unique_id is not None:
-            return self._unique_id + self._sensor_type
+            return self._unique_id
 
     def update(self):
         """Update the state."""
         value = None
 
-        if not math.isnan(self._temperature) and not math.isnan(self._humidity):
-            if self._sensor_type == "dewpoint":
-                value = self.computeDewPoint(self._temperature, self._humidity)
-            if self._sensor_type == "heatindex":
-                value = self.computeHeatIndex(self._temperature, self._humidity)
-            elif self._sensor_type == "humidi_state":
-                value = self.computeHumidiState(self._temperature, self._humidity)
-            elif self._sensor_type == "absolutehumidity":
-                value = self.computeAbsoluteHumidity(self._temperature, self._humidity)
-            elif self._sensor_type == "heatindex_state":
-                value = self.computeHeatIndexState(self._temperature, self._humidity)
-            elif self._sensor_type == "relativehumidity":
+        if _is_real_number(self._inside_temp) and _is_real_number(self._humidity):
+            if self._sensor_type == STYPE_DEWPOINT:
+                value = self.computeDewPoint(self._inside_temp, self._humidity)
+            if self._sensor_type == STYPE_HEATINDEX:
+                value = self.computeHeatIndex(self._inside_temp, self._humidity)
+            elif self._sensor_type == STYPE_HUMIDI_STATE:
+                value = self.computeHumidiState(self._inside_temp, self._humidity)
+            elif self._sensor_type == STYPE_A_HUMIDI:
+                value = self.computeAbsoluteHumidity(self._inside_temp, self._humidity)
+            elif self._sensor_type == STYPE_HEATINDEX_STATE:
+                value = self.computeHeatIndexState(self._inside_temp, self._humidity)
+            elif self._sensor_type == STYPE_R_HUMIDI:
                 value = self._humidity
-            elif self._sensor_type == "temperature":
-                value = self._temperature
-            elif self._sensor_type == "apparent_temperature" and not math.isnan(self._wind):
-                value = self.computeApparentTemperature(self._temperature, self._wind)
-                self._device_state_attributes[ATTR_WIND] = self._wind    
-            elif self._sensor_type == "wind_speed" and not math.isnan(self._wind):
+            elif self._sensor_type == STYPE_INSIDE_TEMP:
+                value = self._inside_temp
+            elif self._sensor_type == STYPE_APPARENT_TEMP and _is_real_number(self._wind) and _is_real_number(self._apparent_temp_source):
+                value = self.computeApparentTemperature(self._apparent_temp_source, self._wind)
+            elif self._sensor_type == STYPE_WIND_SPEED and _is_real_number(self._wind):
                 value = self._wind
-
+            elif self._sensor_type == STYPE_MOLD_INDICATOR and _is_real_number(self._outside_temp):
+                value = self.computeMoldIndicator(self._inside_temp, self._outside_temp, self._humidity, self._mold_calib_factor)
+                self._device_state_attributes[ATTR_DEWPOINT] = self.computeDewPoint(self._inside_temp, self._humidity)
+                self._device_state_attributes[ATTR_CRITICAL_TEMP] = self.computeCriticalTemp(self._inside_temp, self._outside_temp, self._mold_calib_factor)
+            elif self._sensor_type == STYPE_OUTSIDE_TEMP and _is_real_number(self._outside_temp):
+                value = self._outside_temp
+            
             self._state = value
-            self._device_state_attributes[ATTR_TEMPERATURE] = self._temperature
+            self._device_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
             self._device_state_attributes[ATTR_HUMIDITY] = self._humidity
+            if self._outside_temp != None:
+                self._device_state_attributes[ATTR_OUTSIDE_TEMPERATURE] = self._outside_temp
+            if self._wind != None:
+                self._device_state_attributes[ATTR_WIND] = self._wind
 
     async def async_update(self):
         """Update the state."""
         self.update()
+
+def _is_real_number(value) -> bool:
+    return value != None and not math.isnan(value)
 
 def _is_valid_state(state) -> bool:
     return state and state.state != STATE_UNKNOWN and state.state != STATE_UNAVAILABLE and not math.isnan(float(state.state))

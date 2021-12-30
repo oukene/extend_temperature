@@ -13,8 +13,7 @@
           "careful": "careful",
           "very_careful": "very careful",
           "danger": "danger",
-          "very_danger": "very danger",
-          "heatindex_state": "heat index state"
+          "very_danger": "very danger"
         }
-      }
+    }
 }
