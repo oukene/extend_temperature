@@ -1,6 +1,8 @@
 """Constants for the Detailed Hello World Push integration."""
+from typing import DefaultDict
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
+from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE, PLATFORM_SCHEMA
 
 from homeassistant.const import (
     ATTR_TEMPERATURE, DEVICE_CLASS_TEMPERATURE,DEVICE_CLASS_HUMIDITY,
@@ -10,7 +12,7 @@ from homeassistant.const import (
 # This is the internal name of the integration, it should also match the directory
 # name for the integration.
 DOMAIN = "extend_temperature"
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_INSIDE_TEMP_ENTITY = 'inside_temp_entity'
@@ -20,23 +22,12 @@ CONF_WIND_ENTITY = 'wind_entity'
 CONF_MOLD_CALIB_FACTOR = "mold_calib_factor"
 CONF_APPARENT_TEMP_SOURCE_ENTITY = "apparent_temp_source_entity"
 CONF_DECIMAL_PLACES = "decial_places"
+CONF_SENSOR_LANGUAGE = 'sensor_language'
 
 ATTR_HUMIDITY = 'humidity'
 ATTR_WIND = 'wind'
 ATTR_INSIDE_TEMPERATURE = "inside temperature"
 ATTR_OUTSIDE_TEMPERATURE = "outside temperature"
-
-OPTIONS = [
-    #(CONF_DEVICE_NAME, "", cv.string),
-    (CONF_INSIDE_TEMP_ENTITY, "", cv.string),
-    (CONF_HUMIDITY_ENTITY, "", cv.string),
-    (CONF_OUTSIDE_TEMP_ENTITY, "", cv.string),
-    (CONF_APPARENT_TEMP_SOURCE_ENTITY, "", cv.string),
-    (CONF_WIND_ENTITY, "", cv.string),
-    (CONF_MOLD_CALIB_FACTOR, "2.0", cv.string),
-    (CONF_DECIMAL_PLACES, "2", vol.All(vol.Coerce(int), vol.Range(0, 5)))
-]
-
 
 STYPE_INSIDE_TEMP = "inside_temperature"
 STYPE_R_HUMIDI = "relative_humidity"
@@ -64,8 +55,10 @@ SENSOR_TYPES = {
     STYPE_OUTSIDE_TEMP:[DEVICE_CLASS_TEMPERATURE, '°C'],
 }
 
+DEFAULT_LANG = "Korean"
+
 TRANSLATION = {
-    "ko": {
+    "Korean": {
         STYPE_INSIDE_TEMP: "내부 온도",
         STYPE_R_HUMIDI: "상대 습도",
         STYPE_A_HUMIDI: "절대 습도",
@@ -78,7 +71,7 @@ TRANSLATION = {
         STYPE_MOLD_INDICATOR: "결로 지수",
         STYPE_OUTSIDE_TEMP: "외부 온도",
     },
-    "en": {
+    "English": {
         STYPE_INSIDE_TEMP: "Inside Temperature",
         STYPE_R_HUMIDI: "Relative Humidity",
         STYPE_A_HUMIDI: "Absolute Humidity",
@@ -93,3 +86,14 @@ TRANSLATION = {
     }
 }
 
+OPTIONS = [
+    #(CONF_DEVICE_NAME, "", cv.string),
+    (CONF_INSIDE_TEMP_ENTITY, "", cv.string),
+    (CONF_HUMIDITY_ENTITY, "", cv.string),
+    (CONF_OUTSIDE_TEMP_ENTITY, "", cv.string),
+    (CONF_APPARENT_TEMP_SOURCE_ENTITY, "", cv.string),
+    (CONF_WIND_ENTITY, "", cv.string),
+    (CONF_MOLD_CALIB_FACTOR, "2.0", cv.string),
+    (CONF_DECIMAL_PLACES, "2", vol.All(vol.Coerce(int), vol.Range(0, 5))),
+    (CONF_SENSOR_LANGUAGE, DEFAULT_LANG, vol.In(TRANSLATION.keys())),
+]

@@ -55,13 +55,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
 
-    currentLocale = "en"
-    if(locale.getlocale()[0] == 'Korean_Korea'):
-        currentLocale = "ko"
-    else:
-        currentLocale = "en"
-
-    device = Device(config_entry.data.get("device_name"))
+    device = Device(config_entry.data.get(CONF_DEVICE_NAME))
 
     inside_temp_entity = config_entry.data.get(CONF_INSIDE_TEMP_ENTITY)
     humidi_entity = config_entry.data.get(CONF_HUMIDITY_ENTITY)
@@ -70,6 +64,10 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     mold_calib_factor = config_entry.options.get(CONF_MOLD_CALIB_FACTOR)
     apparent_temp_source_entity = config_entry.options.get(CONF_APPARENT_TEMP_SOURCE_ENTITY)
     decimal_places = config_entry.options.get(CONF_DECIMAL_PLACES)
+    current_locale = config_entry.options.get(CONF_SENSOR_LANGUAGE)
+
+    if None == current_locale:
+        current_locale = DEFAULT_LANG
     
     if None == decimal_places:
         decimal_places = 2
@@ -91,7 +89,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         if outside_temp_entity == None or outside_temp_entity == '' or outside_temp_entity == ' ':
             if sensor_type == STYPE_OUTSIDE_TEMP or sensor_type == STYPE_MOLD_INDICATOR:
                 continue
-        
+
         new_devices.append(
                 ExtendSensor(
                         hass,
@@ -105,13 +103,12 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
                         mold_calib_factor,
                         decimal_places,
                         device.device_id + sensor_type,
-                        currentLocale
+                        current_locale
                 )
         )
 
     if new_devices:
         async_add_devices(new_devices)
-
 
 # This base class shows the common properties and methods for a sensor as used in this
 # example. See each sensor for further details about properties and methods that
@@ -246,6 +243,9 @@ class ExtendSensor(SensorBase):
         self._inside_temp = self.setStateListener(self._inside_temp_entity, self.inside_temp_state_listener)
         self._humidity = self.setStateListener(self._humidi_entity, self.humidity_state_listener)
 
+        self.hass.states.get(self._inside_temp_entity)
+
+        self.update()
 
     def setStateListener(self, entity, listener):
         async_track_state_change(
@@ -510,6 +510,13 @@ class ExtendSensor(SensorBase):
 
     def update(self):
         """Update the state."""
+        #while True:
+            #_LOGGER.error("check valid")
+            #time.sleep(1)
+            #if _is_valid_state(self.hass.states.get(self._inside_temp_entity)) and _is_valid_state(self.hass.states.get(self._humidi_entity)):
+            #    _LOGGER.error("check valid end")
+            #    break
+
         value = None
 
         if _is_real_number(self._inside_temp) and _is_real_number(self._humidity):

@@ -55,6 +55,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_DEVICE_NAME): str,
                     vol.Required(CONF_INSIDE_TEMP_ENTITY): str,
                     vol.Required(CONF_HUMIDITY_ENTITY): str,
+                    vol.Optional(CONF_SENSOR_LANGUAGE, default=DEFAULT_LANG): vol.In(TRANSLATION.keys()),
                 }
             ),
             errors=errors
@@ -92,7 +93,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         options_schema = {}
-        data_list = [CONF_INSIDE_TEMP_ENTITY, CONF_HUMIDITY_ENTITY, CONF_OUTSIDE_TEMP_ENTITY, CONF_APPARENT_TEMP_SOURCE_ENTITY, CONF_WIND_ENTITY, CONF_MOLD_CALIB_FACTOR, CONF_DECIMAL_PLACES]
+        data_list = [CONF_INSIDE_TEMP_ENTITY, CONF_HUMIDITY_ENTITY, CONF_OUTSIDE_TEMP_ENTITY, CONF_APPARENT_TEMP_SOURCE_ENTITY, 
+                        CONF_WIND_ENTITY, CONF_MOLD_CALIB_FACTOR, CONF_DECIMAL_PLACES, CONF_SENSOR_LANGUAGE]
         for name, default, validation in OPTIONS:
             to_default = conf.options.get(name, default)
             if name in data_list and conf.options.get(name, default) == default:
