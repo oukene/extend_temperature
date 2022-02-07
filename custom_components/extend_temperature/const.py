@@ -5,14 +5,14 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE, PLATFORM_SCHEMA
 
 from homeassistant.const import (
-    ATTR_TEMPERATURE, DEVICE_CLASS_TEMPERATURE,DEVICE_CLASS_HUMIDITY,
+    ATTR_TEMPERATURE, DEVICE_CLASS_TEMPERATURE, DEVICE_CLASS_HUMIDITY,
 )
 
 
 # This is the internal name of the integration, it should also match the directory
 # name for the integration.
 DOMAIN = "extend_temperature"
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_INSIDE_TEMP_ENTITY = 'inside_temp_entity'
@@ -51,8 +51,8 @@ SENSOR_TYPES = {
     STYPE_HUMIDI_STATE: [DOMAIN + "__humidi_state", None],
     STYPE_HEATINDEX_STATE: [DOMAIN + "__heatindex_state", None],
     STYPE_WIND_SPEED: [None, 'm/s'],
-    STYPE_MOLD_INDICATOR:[DEVICE_CLASS_HUMIDITY, '%'],
-    STYPE_OUTSIDE_TEMP:[DEVICE_CLASS_TEMPERATURE, '°C'],
+    STYPE_MOLD_INDICATOR: [DEVICE_CLASS_HUMIDITY, '%'],
+    STYPE_OUTSIDE_TEMP: [DEVICE_CLASS_TEMPERATURE, '°C'],
 }
 
 DEFAULT_LANG = "Korean"

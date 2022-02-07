@@ -55,10 +55,22 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
 
+    hass.data[DOMAIN]["listener"] = []
+
     device = Device(config_entry.data.get(CONF_DEVICE_NAME))
 
     inside_temp_entity = config_entry.data.get(CONF_INSIDE_TEMP_ENTITY)
+
+    if config_entry.options != None:
+        if config_entry.options.get(CONF_INSIDE_TEMP_ENTITY) != None:
+            inside_temp_entity = config_entry.options.get(CONF_INSIDE_TEMP_ENTITY)
+
     humidi_entity = config_entry.data.get(CONF_HUMIDITY_ENTITY)
+
+    if config_entry.options != None:
+        if config_entry.options.get(CONF_HUMIDITY_ENTITY) != None:
+            humidi_entity = config_entry.options.get(CONF_HUMIDITY_ENTITY)
+
     wind_entity = config_entry.options.get(CONF_WIND_ENTITY)
     outside_temp_entity = config_entry.options.get(CONF_OUTSIDE_TEMP_ENTITY)
     mold_calib_factor = config_entry.options.get(CONF_MOLD_CALIB_FACTOR)
@@ -208,7 +220,7 @@ class ExtendSensor(SensorBase):
         #self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
         self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
         self._state = None
-        self._device_state_attributes = {}
+        self._extra_state_attributes = {}
         self._icon = None
         self._entity_picture = None
         self._inside_temp_entity = inside_temp_entity
@@ -232,24 +244,24 @@ class ExtendSensor(SensorBase):
             self._icon = "mdi:weather-windy"
         
         if self._wind_entity != None:
-            self._wind = self.setStateListener(self._wind_entity, self.wind_state_listener)
+            self._wind = self.setStateListener(hass, self._wind_entity, self.wind_state_listener)
 
         if self._apparent_temp_source_entity != None:
-            self._apparent_temp_source = self.setStateListener(self._apparent_temp_source_entity, self.apparent_temp_source_state_listener)
+            self._apparent_temp_source = self.setStateListener(hass, self._apparent_temp_source_entity, self.apparent_temp_source_state_listener)
 
         if self._outside_temp_entity != None:
-            self._outside_temp = self.setStateListener(self._outside_temp_entity, self.outside_temp_state_listener)
+            self._outside_temp = self.setStateListener(hass, self._outside_temp_entity, self.outside_temp_state_listener)
 
-        self._inside_temp = self.setStateListener(self._inside_temp_entity, self.inside_temp_state_listener)
-        self._humidity = self.setStateListener(self._humidi_entity, self.humidity_state_listener)
+        self._inside_temp = self.setStateListener(hass, self._inside_temp_entity, self.inside_temp_state_listener)
+        self._humidity = self.setStateListener(hass, self._humidi_entity, self.humidity_state_listener)
 
         self.hass.states.get(self._inside_temp_entity)
 
         self.update()
 
-    def setStateListener(self, entity, listener):
-        async_track_state_change(
-                self.hass, entity, listener)
+    def setStateListener(self, hass, entity, listener):
+        hass.data[DOMAIN]["listener"].append(async_track_state_change(
+                self.hass, entity, listener))
             
         entity_state = self.hass.states.get(entity)
         if _is_valid_state(entity_state):
@@ -473,9 +485,9 @@ class ExtendSensor(SensorBase):
         return self._state
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the state attributes."""
-        return self._device_state_attributes
+        return self._extra_state_attributes
 
     @property
     def icon(self):
@@ -540,18 +552,18 @@ class ExtendSensor(SensorBase):
                 value = self._wind
             elif self._sensor_type == STYPE_MOLD_INDICATOR and _is_real_number(self._outside_temp):
                 value = self.computeMoldIndicator(self._inside_temp, self._outside_temp, self._humidity, self._mold_calib_factor)
-                self._device_state_attributes[ATTR_DEWPOINT] = self.computeDewPoint(self._inside_temp, self._humidity)
-                self._device_state_attributes[ATTR_CRITICAL_TEMP] = self.computeCriticalTemp(self._inside_temp, self._outside_temp, self._mold_calib_factor)
+                self._extra_state_attributes[ATTR_DEWPOINT] = self.computeDewPoint(self._inside_temp, self._humidity)
+                self._extra_state_attributes[ATTR_CRITICAL_TEMP] = self.computeCriticalTemp(self._inside_temp, self._outside_temp, self._mold_calib_factor)
             elif self._sensor_type == STYPE_OUTSIDE_TEMP and _is_real_number(self._outside_temp):
                 value = self._outside_temp
             
             self._state = value
-            self._device_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
-            self._device_state_attributes[ATTR_HUMIDITY] = self._humidity
+            self._extra_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
+            self._extra_state_attributes[ATTR_HUMIDITY] = self._humidity
             if self._outside_temp != None:
-                self._device_state_attributes[ATTR_OUTSIDE_TEMPERATURE] = self._outside_temp
+                self._extra_state_attributes[ATTR_OUTSIDE_TEMPERATURE] = self._outside_temp
             if self._wind != None:
-                self._device_state_attributes[ATTR_WIND] = self._wind
+                self._extra_state_attributes[ATTR_WIND] = self._wind
 
     async def async_update(self):
         """Update the state."""
@@ -562,3 +574,4 @@ def _is_real_number(value) -> bool:
 
 def _is_valid_state(state) -> bool:
     return state and state.state != STATE_UNKNOWN and state.state != STATE_UNAVAILABLE and not math.isnan(float(state.state))
+

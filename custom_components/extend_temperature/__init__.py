@@ -1,11 +1,19 @@
 """The Detailed Hello World Push integration."""
 import asyncio
+import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from .const import CONF_DEVICE_NAME
 
 from .const import DOMAIN
+
+from homeassistant.helpers.device_registry import (
+    async_get_registry,
+    async_entries_for_config_entry
+)
+
+_LOGGER = logging.getLogger(__name__)
 
 # List of platforms to support. There should be a matching .py file for each,
 # eg <cover.py> and <sensor.py>
@@ -42,6 +50,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     # This is called when an entry/configured device is to be removed. The class
     # needs to unload itself, and remove callbacks. See the classes for further
     # details
+
+    for listener in hass.data[DOMAIN]["listener"]:
+        listener()
+
     unload_ok = all(
         await asyncio.gather(
             *[
@@ -50,6 +62,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
             ]
         )
     )
+
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
