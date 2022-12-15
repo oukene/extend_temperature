@@ -12,7 +12,7 @@ from homeassistant.const import (
 # This is the internal name of the integration, it should also match the directory
 # name for the integration.
 DOMAIN = "extend_temperature"
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_INSIDE_TEMP_ENTITY = 'inside_temp_entity'
@@ -70,6 +70,21 @@ TRANSLATION = {
         STYPE_WIND_SPEED: "풍속",
         STYPE_MOLD_INDICATOR: "결로 지수",
         STYPE_OUTSIDE_TEMP: "외부 온도",
+        "HUMIDI_STATE": {
+            "little_dry": "약간 건조",
+            "very_good": "매우 좋음",
+            "good": "좋음",
+            "wet": "습함",
+            "little_wet": "조금 습함",
+            "very_wet": "매우 습함",
+        },
+        "HEAT_INDEX_STATE": {
+            "good": "좋음",
+            "careful": "주의",
+            "very_careful": "매우 주의",
+            "danger": "위험",
+            "very_danger": "매우 위험",
+        }
     },
     "English": {
         STYPE_INSIDE_TEMP: "Inside Temperature",
@@ -83,8 +98,24 @@ TRANSLATION = {
         STYPE_WIND_SPEED: "Wind Speed",
         STYPE_MOLD_INDICATOR: "Mold Indicator",
         STYPE_OUTSIDE_TEMP: "Outside Temperature",
+        "HUMIDI_STATE": {
+            "little_dry": "little dry",
+            "very_good": "very good",
+            "good": "good",
+            "wet": "wet",
+            "little_wet": "little wet",
+            "very_wet": "very wet",
+        },
+        "HEAT_INDEX_STATE": {
+            "good": "good",
+            "careful": "careful",
+            "very_careful": "very careful",
+            "danger": "danger",
+            "very_danger": "very danger",
+        }
     }
 }
+
 
 OPTIONS = [
     #(CONF_DEVICE_NAME, "", cv.string),
