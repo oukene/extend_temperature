@@ -10,6 +10,7 @@ import random
 import logging
 import time
 import homeassistant
+import datetime
 from typing import Optional
 from homeassistant.const import (
     CONF_TEMPERATURE_UNIT,
@@ -79,6 +80,8 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     mold_calib_factor = config_entry.options.get(CONF_MOLD_CALIB_FACTOR)
     apparent_temp_source_entity = config_entry.options.get(
         CONF_APPARENT_TEMP_SOURCE_ENTITY)
+    apparent_hum_source_entity = config_entry.options.get(
+        CONF_APPARENT_HUM_SOURCE_ENTITY)
     decimal_places = config_entry.options.get(CONF_DECIMAL_PLACES)
     current_locale = config_entry.options.get(CONF_SENSOR_LANGUAGE)
 
@@ -98,6 +101,11 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         if apparent_temp_source_entity == None or apparent_temp_source_entity == '' or apparent_temp_source_entity == ' ':
             if sensor_type == STYPE_APPARENT_TEMP:
                 continue
+
+        if apparent_hum_source_entity == None or apparent_hum_source_entity == '' or apparent_hum_source_entity == ' ':
+            if sensor_type == STYPE_APPARENT_HUM:
+                continue
+
         if wind_entity == None or wind_entity == '' or wind_entity == ' ':
             if sensor_type == STYPE_WIND_SPEED or sensor_type == STYPE_APPARENT_TEMP:
                 continue
@@ -116,6 +124,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
                 outside_temp_entity,
                 wind_entity,
                 apparent_temp_source_entity,
+                apparent_hum_source_entity,
                 mold_calib_factor,
                 decimal_places,
                 device.device_id + sensor_type,
@@ -217,7 +226,7 @@ class ExtendSensor(SensorBase):
     """Representation of a Thermal Comfort Sensor."""
 
     def __init__(self, hass, device, sensor_type, inside_temp_entity, humidi_entity, outside_temp_entity, wind_entity,
-                 apparent_temp_source_entity, mold_calib_factor, decimal_places, unique_id, currentLocale):
+                 apparent_temp_source_entity, apparent_hum_source_entity, mold_calib_factor, decimal_places, unique_id, currentLocale):
         """Initialize the sensor."""
         super().__init__(device)
 
@@ -236,6 +245,7 @@ class ExtendSensor(SensorBase):
         self._humidi_entity = humidi_entity
         self._outside_temp_entity = outside_temp_entity
         self._apparent_temp_source_entity = apparent_temp_source_entity
+        self._apparent_hum_source_entity = apparent_hum_source_entity
         self._wind_entity = wind_entity
         self._mold_calib_factor = mold_calib_factor
         self._decimal_places = decimal_places
@@ -248,6 +258,7 @@ class ExtendSensor(SensorBase):
         self._device = device
         self._wind = None
         self._apparent_temp_source = None
+        self._apparent_hum_source = None
         self._locale = currentLocale
 
         if sensor_type == STYPE_WIND_SPEED:
@@ -260,6 +271,10 @@ class ExtendSensor(SensorBase):
         if self._apparent_temp_source_entity != None:
             self._apparent_temp_source = self.setStateListener(
                 hass, self._apparent_temp_source_entity, self.apparent_temp_source_state_listener)
+
+        if self._apparent_hum_source_entity != None:
+            self._apparent_hum_source = self.setStateListener(
+                hass, self._apparent_hum_source_entity, self.apparent_hum_source_state_listener)
 
         if self._outside_temp_entity != None:
             self._outside_temp = self.setStateListener(
@@ -292,6 +307,16 @@ class ExtendSensor(SensorBase):
                 if unit == TEMP_FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._apparent_temp_source = temp
+
+            self.async_schedule_update_ha_state(True)
+        except:
+            ''
+
+    def apparent_hum_source_state_listener(self, entity, old_state, new_state):
+        try:
+            """Handle temperature device state changes."""
+            if _is_valid_state(new_state):
+                self._apparent_hum_source = float(new_state.state)
 
             self.async_schedule_update_ha_state(True)
         except:
@@ -346,6 +371,7 @@ class ExtendSensor(SensorBase):
             self.async_schedule_update_ha_state(True)
         except:
             ''
+
 
     def computeDewPoint(self, temperature, humidity):
         """Calculate the dewpoint for the inside air."""
@@ -485,10 +511,25 @@ class ExtendSensor(SensorBase):
         absHumidity /= absTemperature
         return round(absHumidity, self._decimal_places)
 
-    def computeApparentTemperature(self, temperature, wind):
-        wind_per_hour = wind * 60 * 60 / 1000.0
-        apparent_temperature = 13.12 + 0.6215 * temperature - 11.37 * \
-            wind_per_hour ** 0.16 + 0.3965 * wind_per_hour ** 0.16 * temperature
+    def computeApparentTemperature(self, temperature, humidity, wind):
+        T = temperature
+        H = humidity
+        W = wind * 3.6
+        if datetime.datetime.today().month >= 5 and datetime.datetime.today().month <= 9:
+            """ 하계용 체감온도 계산 """
+            TW = T*math.atan(0.151977*(math.pow(H+8.313659, 1/2)))+math.atan(T+H)-math.atan(
+                H-1.67633)+0.00391838*math.pow(H, 3/2)*math.atan(0.023101*H)-4.686035
+            apparent_temperature = -0.2442+0.55399*TW+0.45535*T - \
+                0.0022*math.pow(TW, 2)+0.00278*TW*T+3.0
+        else:
+            if W > 4.8:
+                W = math.pow(W, 0.16)
+                apparent_temperature = 13.12 + 0.6215 * T - 11.37 * W + 0.3965 * W * T
+                if (apparent_temperature > T):
+                    apparent_temperature = T
+            else:
+                apparent_temperature = T
+
         return round(apparent_temperature, self._decimal_places)
 
     """Sensor Properties"""
@@ -568,9 +609,9 @@ class ExtendSensor(SensorBase):
                 value = self._humidity
             elif self._sensor_type == STYPE_INSIDE_TEMP:
                 value = self._inside_temp
-            elif self._sensor_type == STYPE_APPARENT_TEMP and _is_real_number(self._wind) and _is_real_number(self._apparent_temp_source):
+            elif self._sensor_type == STYPE_APPARENT_TEMP and _is_real_number(self._wind) and _is_real_number(self._apparent_temp_source) and _is_real_number(self._apparent_hum_source):
                 value = self.computeApparentTemperature(
-                    self._apparent_temp_source, self._wind)
+                    self._apparent_temp_source, self._apparent_hum_source, self._wind)
             elif self._sensor_type == STYPE_WIND_SPEED and _is_real_number(self._wind):
                 value = self._wind
             elif self._sensor_type == STYPE_MOLD_INDICATOR and _is_real_number(self._outside_temp):
