@@ -8,11 +8,6 @@ from .const import CONF_DEVICE_NAME
 
 from .const import DOMAIN
 
-from homeassistant.helpers.device_registry import (
-    async_get_registry,
-    async_entries_for_config_entry
-)
-
 _LOGGER = logging.getLogger(__name__)
 
 # List of platforms to support. There should be a matching .py file for each,
