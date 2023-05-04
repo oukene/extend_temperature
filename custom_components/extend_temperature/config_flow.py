@@ -1,10 +1,9 @@
 """Config flow for Hello World integration."""
 import logging
-from homeassistant.const import CONF_ID
 
 import voluptuous as vol
 
-from homeassistant import config_entries, core, exceptions
+from homeassistant import config_entries
 from homeassistant.core import callback
 
 from .const import *  # pylint:disable=unused-import

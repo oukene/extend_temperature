@@ -5,43 +5,25 @@
 # to display it in the UI (for know types). The unit_of_measurement property tells HA
 # what the unit is, so it can display the correct range. For predefined types (such as
 # battery), the unit_of_measurement should match what's expected.
-import decimal
-import random
 import logging
-import time
-import homeassistant
 import datetime
 from typing import Optional
 from homeassistant.const import (
-    CONF_TEMPERATURE_UNIT,
-    DEVICE_CLASS_BATTERY,
-    PERCENTAGE,
-    DEVICE_CLASS_ILLUMINANCE,
-    ATTR_FRIENDLY_NAME, ATTR_UNIT_OF_MEASUREMENT, CONF_ICON_TEMPLATE,
-    CONF_ENTITY_PICTURE_TEMPLATE, CONF_SENSORS, EVENT_HOMEASSISTANT_START,
-    MATCH_ALL, CONF_DEVICE_CLASS, DEVICE_CLASS_TEMPERATURE, STATE_UNKNOWN,
-    STATE_UNAVAILABLE, DEVICE_CLASS_HUMIDITY, ATTR_TEMPERATURE, TEMP_FAHRENHEIT,
-    CONF_UNIQUE_ID,
+    ATTR_UNIT_OF_MEASUREMENT, STATE_UNKNOWN,
+    STATE_UNAVAILABLE, TEMP_FAHRENHEIT,
 )
 
-from homeassistant.components.sensor import ENTITY_ID_FORMAT, \
-    PLATFORM_SCHEMA, DEVICE_CLASSES_SCHEMA
-
-from homeassistant.const import ATTR_VOLTAGE
+from homeassistant.components.sensor import ENTITY_ID_FORMAT
 import asyncio
 
-from homeassistant import components
 from homeassistant import util
 from homeassistant.helpers.entity import Entity
 
 from homeassistant.components.mold_indicator.sensor import ATTR_CRITICAL_TEMP, ATTR_DEWPOINT
 from .const import *
-from homeassistant.exceptions import TemplateError
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity, async_generate_entity_id
 from homeassistant.helpers.event import async_track_state_change
 
-import locale
 import math
 
 MAGNUS_K2 = 17.62

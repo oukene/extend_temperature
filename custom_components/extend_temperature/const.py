@@ -1,11 +1,10 @@
 """Constants for the Detailed Hello World Push integration."""
-from typing import DefaultDict
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE, PLATFORM_SCHEMA
+from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE
 
 from homeassistant.const import (
-    ATTR_TEMPERATURE, DEVICE_CLASS_TEMPERATURE, DEVICE_CLASS_HUMIDITY,
+    DEVICE_CLASS_TEMPERATURE, DEVICE_CLASS_HUMIDITY,
 )
 
 
