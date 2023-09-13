@@ -12,7 +12,7 @@ from homeassistant.helpers.selector import selector
 # This is the internal name of the integration, it should also match the directory
 # name for the integration.
 DOMAIN = "extend_temperature"
-VERSION = "1.6.0"
+VERSION = "1.6.1"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_INSIDE_TEMP_ENTITY = 'inside_temp_entity'
