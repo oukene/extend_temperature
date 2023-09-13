@@ -5,7 +5,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
-
+from homeassistant.helpers.selector import selector
 from .const import *  # pylint:disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,8 +52,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_DEVICE_NAME): str,
-                    vol.Required(CONF_INSIDE_TEMP_ENTITY): str,
-                    vol.Required(CONF_HUMIDITY_ENTITY): str,
+                    vol.Required(CONF_INSIDE_TEMP_ENTITY): selector({"entity": {}}),
+                    vol.Required(CONF_HUMIDITY_ENTITY): selector({"entity": {}}),
                     vol.Optional(CONF_SENSOR_LANGUAGE, default=DEFAULT_LANG): vol.In(TRANSLATION.keys()),
                 }
             ),
@@ -89,6 +89,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if conf.source == config_entries.SOURCE_IMPORT:
             return self.async_show_form(step_id="init", data_schema=None)
         if user_input is not None:
+            _LOGGER.debug("before async_create_entry")
             return self.async_create_entry(title="", data=user_input)
 
         options_schema = {}
@@ -99,6 +100,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             if name in data_list and conf.options.get(name, default) == default:
                 to_default = conf.data.get(name, default)
             key = vol.Optional(name, default=to_default)
+            _LOGGER.debug("name : " + name + ", default : " + str(to_default))
             options_schema[key] = validation
         return self.async_show_form(
             step_id="init", data_schema=vol.Schema(options_schema)

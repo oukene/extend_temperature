@@ -217,7 +217,7 @@ class ExtendSensor(SensorBase):
             ENTITY_ID_FORMAT, "{}_{}".format(device.device_id, sensor_type), hass=hass)
         self._name = "{} {}".format(
             device.device_id, TRANSLATION[currentLocale][sensor_type])
-        #self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
+        # self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
         self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
         self._state = None
         self._extra_state_attributes = {}
@@ -354,7 +354,6 @@ class ExtendSensor(SensorBase):
         except:
             ''
 
-
     def computeDewPoint(self, temperature, humidity):
         """Calculate the dewpoint for the inside air."""
         # Use magnus approximation to calculate the dew point
@@ -407,15 +406,15 @@ class ExtendSensor(SensorBase):
         return mold
 
         """http://wahiduddin.net/calc/density_algorithms.htm"""
-        #A0 = 373.15 / (273.15 + temperature)
-        #SUM = -7.90298 * (A0 - 1)
-        #SUM += 5.02808 * math.log(A0, 10)
-        #SUM += -1.3816e-7 * (pow(10, (11.344 * (1 - 1 / A0))) - 1)
-        #SUM += 8.1328e-3 * (pow(10, (-3.49149 * (A0 - 1))) - 1)
-        #SUM += math.log(1013.246, 10)
-        #VP = pow(10, SUM - 3) * humidity
-        #Td = math.log(VP / 0.61078)
-        #Td = (241.88 * Td) / (17.558 - Td)
+        # A0 = 373.15 / (273.15 + temperature)
+        # SUM = -7.90298 * (A0 - 1)
+        # SUM += 5.02808 * math.log(A0, 10)
+        # SUM += -1.3816e-7 * (pow(10, (11.344 * (1 - 1 / A0))) - 1)
+        # SUM += 8.1328e-3 * (pow(10, (-3.49149 * (A0 - 1))) - 1)
+        # SUM += math.log(1013.246, 10)
+        # VP = pow(10, SUM - 3) * humidity
+        # Td = math.log(VP / 0.61078)
+        # Td = (241.88 * Td) / (17.558 - Td)
         # return round(Td, 2)
 
     def toFahrenheit(self, celsius):
@@ -564,7 +563,7 @@ class ExtendSensor(SensorBase):
     def update(self):
         """Update the state."""
         # while True:
-        #_LOGGER.error("check valid")
+        # _LOGGER.error("check valid")
         # time.sleep(1)
         # if _is_valid_state(self.hass.states.get(self._inside_temp_entity)) and _is_valid_state(self.hass.states.get(self._humidi_entity)):
         #    _LOGGER.error("check valid end")
@@ -572,7 +571,7 @@ class ExtendSensor(SensorBase):
 
         value = None
 
-        if _is_real_number(self._inside_temp) and _is_real_number(self._humidity):
+        if isNumber(self._inside_temp) and isNumber(self._humidity):
             if self._sensor_type == STYPE_DEWPOINT:
                 value = self.computeDewPoint(self._inside_temp, self._humidity)
             if self._sensor_type == STYPE_HEATINDEX:
@@ -591,20 +590,23 @@ class ExtendSensor(SensorBase):
                 value = self._humidity
             elif self._sensor_type == STYPE_INSIDE_TEMP:
                 value = self._inside_temp
-            elif self._sensor_type == STYPE_APPARENT_TEMP and _is_real_number(self._wind) and _is_real_number(self._apparent_temp_source) and _is_real_number(self._apparent_hum_source):
+            elif self._sensor_type == STYPE_APPARENT_TEMP and isNumber(self._wind) and isNumber(self._apparent_temp_source) and isNumber(self._apparent_hum_source):
                 value = self.computeApparentTemperature(
                     self._apparent_temp_source, self._apparent_hum_source, self._wind)
-            elif self._sensor_type == STYPE_WIND_SPEED and _is_real_number(self._wind):
+            elif self._sensor_type == STYPE_WIND_SPEED and isNumber(self._wind):
                 value = self._wind
-            elif self._sensor_type == STYPE_MOLD_INDICATOR and _is_real_number(self._outside_temp):
+            elif self._sensor_type == STYPE_MOLD_INDICATOR and isNumber(self._outside_temp):
                 value = self.computeMoldIndicator(
                     self._inside_temp, self._outside_temp, self._humidity, self._mold_calib_factor)
                 self._extra_state_attributes[ATTR_DEWPOINT] = self.computeDewPoint(
                     self._inside_temp, self._humidity)
                 self._extra_state_attributes[ATTR_CRITICAL_TEMP] = self.computeCriticalTemp(
                     self._inside_temp, self._outside_temp, self._mold_calib_factor)
-            elif self._sensor_type == STYPE_OUTSIDE_TEMP and _is_real_number(self._outside_temp):
+            elif self._sensor_type == STYPE_OUTSIDE_TEMP and isNumber(self._outside_temp):
                 value = self._outside_temp
+
+            if isNumber(value):
+                value = round(float(value), self._decimal_places)
 
             self._state = value
             self._extra_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
@@ -621,6 +623,17 @@ class ExtendSensor(SensorBase):
 
 def _is_real_number(value) -> bool:
     return value != None and not math.isnan(value)
+
+
+def isNumber(s):
+    try:
+        if s != None:
+            float(s)
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
 
 
 def _is_valid_state(state) -> bool:

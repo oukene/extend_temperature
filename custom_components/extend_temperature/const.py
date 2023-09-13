@@ -6,6 +6,7 @@ from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE
 from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE, DEVICE_CLASS_HUMIDITY,
 )
+from homeassistant.helpers.selector import selector
 
 
 # This is the internal name of the integration, it should also match the directory
@@ -120,8 +121,8 @@ TRANSLATION = {
 
 OPTIONS = [
     #(CONF_DEVICE_NAME, "", cv.string),
-    (CONF_INSIDE_TEMP_ENTITY, "", cv.string),
-    (CONF_HUMIDITY_ENTITY, "", cv.string),
+    (CONF_INSIDE_TEMP_ENTITY, "", selector({"entity": {}})),
+    (CONF_HUMIDITY_ENTITY, "", selector({"entity": {}})),
     (CONF_OUTSIDE_TEMP_ENTITY, "", cv.string),
     (CONF_APPARENT_TEMP_SOURCE_ENTITY, "", cv.string),
     (CONF_APPARENT_HUM_SOURCE_ENTITY, "", cv.string),
