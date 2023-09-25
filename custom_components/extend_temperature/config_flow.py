@@ -4,6 +4,10 @@ import logging
 import voluptuous as vol
 
 from homeassistant import config_entries
+from types import MappingProxyType
+from typing import Any
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
+from homeassistant.data_entry_flow import FlowResult
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector
 from .const import *  # pylint:disable=unused-import
@@ -76,6 +80,46 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
 
+@callback  # type: ignore[misc]
+def _get_options_schema(defaults) -> vol.Schema:
+    """Return options schema."""
+    _LOGGER.debug("defaults : " + str(defaults.options))
+    return vol.Schema(
+        {
+            vol.Required(CONF_INSIDE_TEMP_ENTITY, default=defaults.data.get(CONF_INSIDE_TEMP_ENTITY, None)
+            ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Required(CONF_HUMIDITY_ENTITY, default=defaults.data.get(CONF_HUMIDITY_ENTITY, None)
+            ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Optional(
+                CONF_OUTSIDE_TEMP_ENTITY, 
+                description={
+                    "suggested_value": defaults.options[CONF_OUTSIDE_TEMP_ENTITY]}
+                if CONF_OUTSIDE_TEMP_ENTITY in defaults.options
+                else None,
+            ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Optional(CONF_APPARENT_TEMP_SOURCE_ENTITY, CONF_APPARENT_TEMP_SOURCE_ENTITY,
+                         description={
+                             "suggested_value": defaults.options[CONF_APPARENT_TEMP_SOURCE_ENTITY]}
+                         if CONF_APPARENT_TEMP_SOURCE_ENTITY in defaults.options
+                         else None,
+            ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Optional(CONF_APPARENT_HUM_SOURCE_ENTITY, CONF_APPARENT_HUM_SOURCE_ENTITY,
+                         description={
+                             "suggested_value": defaults.options[CONF_APPARENT_HUM_SOURCE_ENTITY]}
+                         if CONF_APPARENT_HUM_SOURCE_ENTITY in defaults.options
+                         else None,
+            ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Optional(CONF_WIND_ENTITY, CONF_WIND_ENTITY,
+                         description={
+                             "suggested_value": defaults.options[CONF_WIND_ENTITY]}
+                         if CONF_WIND_ENTITY in defaults.options
+                         else None,
+            ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Optional(CONF_DECIMAL_PLACES, default=defaults.options.get(CONF_DECIMAL_PLACES, 2.0)): vol.All(vol.Coerce(int), vol.Range(0, 5)),
+            vol.Optional(CONF_SENSOR_LANGUAGE, default=defaults.options.get(CONF_SENSOR_LANGUAGE, DEFAULT_LANG)): vol.In(TRANSLATION.keys()),
+        }
+    )
+
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for Naver Weather."""
 
@@ -83,25 +127,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input=None) -> FlowResult:
         """Handle options flow."""
         conf = self.config_entry
         if conf.source == config_entries.SOURCE_IMPORT:
             return self.async_show_form(step_id="init", data_schema=None)
         if user_input is not None:
             _LOGGER.debug("before async_create_entry")
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(title=conf.data[CONF_DEVICE_NAME], data=user_input)
 
-        options_schema = {}
-        data_list = [CONF_INSIDE_TEMP_ENTITY, CONF_HUMIDITY_ENTITY, CONF_OUTSIDE_TEMP_ENTITY, CONF_APPARENT_TEMP_SOURCE_ENTITY, 
-                        CONF_WIND_ENTITY, CONF_MOLD_CALIB_FACTOR, CONF_DECIMAL_PLACES, CONF_SENSOR_LANGUAGE]
-        for name, default, validation in OPTIONS:
-            to_default = conf.options.get(name, default)
-            if name in data_list and conf.options.get(name, default) == default:
-                to_default = conf.data.get(name, default)
-            key = vol.Optional(name, default=to_default)
-            _LOGGER.debug("name : " + name + ", default : " + str(to_default))
-            options_schema[key] = validation
         return self.async_show_form(
-            step_id="init", data_schema=vol.Schema(options_schema)
+            step_id="init",
+            data_schema=_get_options_schema(self.config_entry),
         )
+

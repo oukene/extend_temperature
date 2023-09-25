@@ -215,6 +215,7 @@ class ExtendSensor(SensorBase):
         self.hass = hass
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, "{}_{}".format(device.device_id, sensor_type), hass=hass)
+        _LOGGER.debug("entity id : " + str(self.entity_id))
         self._name = "{} {}".format(
             device.device_id, TRANSLATION[currentLocale][sensor_type])
         # self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])

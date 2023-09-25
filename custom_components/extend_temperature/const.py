@@ -121,12 +121,15 @@ TRANSLATION = {
 
 OPTIONS = [
     #(CONF_DEVICE_NAME, "", cv.string),
-    (CONF_INSIDE_TEMP_ENTITY, "", selector({"entity": {}})),
-    (CONF_HUMIDITY_ENTITY, "", selector({"entity": {}})),
-    (CONF_OUTSIDE_TEMP_ENTITY, "", cv.string),
-    (CONF_APPARENT_TEMP_SOURCE_ENTITY, "", cv.string),
-    (CONF_APPARENT_HUM_SOURCE_ENTITY, "", cv.string),
-    (CONF_WIND_ENTITY, "", cv.string),
+    (CONF_INSIDE_TEMP_ENTITY, None, selector({"entity": {}})),
+    (CONF_HUMIDITY_ENTITY, None, selector({"entity": {}})),
+    (CONF_OUTSIDE_TEMP_ENTITY, None, selector(
+        {"entity": {"domain": ["sensor", "input_number"]}})),
+    (CONF_APPARENT_TEMP_SOURCE_ENTITY, None, selector(
+        {"entity": {"domain": ["sensor", "input_number"]}})),
+    (CONF_APPARENT_HUM_SOURCE_ENTITY, None, selector(
+        {"entity": {"domain": ["sensor", "input_number"]}})),
+    (CONF_WIND_ENTITY, None, selector({"entity": {"domain": ["sensor", "input_number"]}})),
     (CONF_MOLD_CALIB_FACTOR, "2.0", cv.string),
     (CONF_DECIMAL_PLACES, "2", vol.All(vol.Coerce(int), vol.Range(0, 5))),
     (CONF_SENSOR_LANGUAGE, DEFAULT_LANG, vol.In(TRANSLATION.keys())),
