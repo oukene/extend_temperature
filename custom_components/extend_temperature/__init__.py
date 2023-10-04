@@ -34,19 +34,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(entry.add_update_listener(update_listener))
 
-    entity_registry = homeassistant.helpers.entity_registry.async_get(
-        hass)
-    entities = homeassistant.helpers.entity_registry.async_entries_for_config_entry(
-        entity_registry, entry.entry_id)
-    for e in entities:
-        entity_registry.async_remove(e.entity_id)
+    #entity_registry = homeassistant.helpers.entity_registry.async_get(
+    #    hass)
+    #entities = homeassistant.helpers.entity_registry.async_entries_for_config_entry(
+    #    entity_registry, entry.entry_id)
+    #for e in entities:
+    #    entity_registry.async_remove(e.entity_id)
 
-    device_registry = homeassistant.helpers.device_registry.async_get(hass)
-    devices = homeassistant.helpers.device_registry.async_entries_for_config_entry(
-        device_registry, entry.entry_id)
-    for d in devices:
-        device_registry.async_update_device(
-            d.id, remove_config_entry_id=entry.entry_id)
+    #device_registry = homeassistant.helpers.device_registry.async_get(hass)
+    #devices = homeassistant.helpers.device_registry.async_entries_for_config_entry(
+    #    device_registry, entry.entry_id)
+    #for d in devices:
+    #    device_registry.async_update_device(
+    #        d.id, remove_config_entry_id=entry.entry_id)
 
     # This creates each HA object for each platform your device requires.
     # It's done by calling the `async_setup_entry` function in each platform module.
