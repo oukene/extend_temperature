@@ -3,12 +3,9 @@
   "name": "Extend Temperature",
   "config_flow": true,
   "documentation": "https://github.com/oukene/Extend_Temperature",
-  "requirements": [],
-  "ssdp": [],
-  "zeroconf": [],
-  "homekit": {},
+  "intergration_type": "entity",
   "dependencies": [],
   "codeowners": ["@oukene"],
   "iot_class": "",
-  "version": "1.6.2"
+  "version": "1.6.3"
 }

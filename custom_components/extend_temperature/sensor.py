@@ -17,7 +17,7 @@ from homeassistant.components.sensor import ENTITY_ID_FORMAT
 import asyncio
 
 from homeassistant import util
-from homeassistant.helpers.entity import Entity
+from homeassistant.components.sensor import SensorEntity
 
 from homeassistant.components.mold_indicator.sensor import ATTR_CRITICAL_TEMP, ATTR_DEWPOINT
 from .const import *
@@ -122,7 +122,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 # have been overridden.
 
 
-class SensorBase(Entity):
+class SensorBase(SensorEntity):
     """Base representation of a Hello World Sensor."""
 
     should_poll = False
@@ -560,6 +560,11 @@ class ExtendSensor(SensorBase):
         """Return a unique ID."""
         if self._unique_id is not None:
             return self._unique_id
+
+    @property
+    def suggested_display_precision(self) -> int | None:
+        return self._decimal_places if self._sensor_type in (STYPE_HUMIDI_STATE, STYPE_HEATINDEX_STATE) else None
+        
 
     def update(self):
         """Update the state."""
