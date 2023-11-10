@@ -32,5 +32,57 @@
                 }
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "inside_temperature": {
+                "name": "\ub0b4\ubd80\u0020\uc628\ub3c4"
+            },
+            "relative_humidity": {
+                "name": "\uc0c1\ub300\u0020\uc2b5\ub3c4"
+            },
+            "absolute_humidity": {
+                "name": "\uc808\ub300\u0020\uc2b5\ub3c4"
+            },
+            "heatindex": {
+                "name": "\uc5f4\u0020\uc9c0\uc218"
+            },
+            "apparent_temperature": {
+                "name": "\uccb4\uac10\u0020\uc628\ub3c4"
+            },
+            "dewpoint": {
+                "name": "\uc774\uc2ac\uc810"
+            },
+            "humidity_state": {
+                "name": "\uc2b5\ub3c4\u0020\uc0c1\ud0dc",
+                "state": {
+                    "little_dry": "\uc57d\uac04\u0020\uac74\uc870",
+                    "very_good": "\ub9e4\uc6b0\u0020\uc88b\uc74c",
+                    "good": "\uc88b\uc74c",
+                    "wet": "\uc2b5\ud568",
+                    "little_wet": "\uc870\uae08\u0020\uc2b5\ud568",
+                    "very_wet": "\ub9e4\uc6b0\u0020\uc2b5\ud568"
+                }
+            },
+            "heatindex_state": {
+                "name": "\uc5f4\uc9c0\uc218\u0020\uc0c1\ud0dc",
+                "state": {
+                    "good": "\uc88b\uc74c",
+                    "careful": "\uc8fc\uc758",
+                    "very_careful": "\ub9e4\uc6b0\u0020\uc8fc\uc758",
+                    "danger": "\uc704\ud5d8",
+                    "very_danger": "\ub9e4\uc6b0\u0020\uc704\ud5d8"
+                }
+            },
+            "wind_speed": {
+                "name": "\ud48d\uc18d"
+            },
+            "mold_indicator": {
+                "name": "\uacb0\ub85c\u0020\uc9c0\uc218"
+            },
+            "outside_temperature": {
+                "name": "\uD55C\uAE00\uB9CC \uBCC0\uD658 \uC798 \uD558\uB294\uC9C0 \uCCB4\uD06C"
+            }
+        }
     }
 }

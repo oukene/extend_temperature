@@ -32,5 +32,60 @@
                }
            }
        }
-   }
+   },
+   "entity": {
+        "sensor": {
+            "inside_temperature": {
+                "name": "Inside Temperature"
+            },
+            "relative_humidity": {
+                "name": "Relative Humidity"
+            },
+            "absolute_humidity": {
+                "name": "Absolute Humidity"
+            },
+            "heatindex": {
+                "name": "HeatIndex"
+            },
+            "apparent_temperature": {
+                "name": "Apparent Temperature"
+            },
+            "apparent_humidity": {
+                "name": "Apparent humidity"
+            },
+            "dewpoint": {
+                "name": "Dewpoint"
+            },
+            "humidity_state": {
+                "name": "Humidity State",
+                "state": {
+                    "little_dry": "little dry",
+                    "very_good": "very good",
+                    "good": "good",
+                    "wet": "wet",
+                    "little_wet": "little wet",
+                    "very_wet": "very wet"
+                }
+            },
+            "heatindex_state": {
+                "name": "HeatIndex State",
+                "state": {
+                    "good": "good",
+                    "careful": "careful",
+                    "very_careful": "very careful",
+                    "danger": "danger",
+                    "very_danger": "very danger"
+                }
+            },
+            "wind_speed": {
+                "name": "Wind Speed"
+            },
+            "mold_indicator": {
+                "name": "Mold Indicator"
+            },
+            "outside_temperature": {
+                "name": "Outside Temperature"
+            }
+        }
+    }
 }

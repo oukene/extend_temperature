@@ -206,6 +206,8 @@ class Device:
 
 class ExtendSensor(SensorBase):
     """Representation of a Thermal Comfort Sensor."""
+    _attr_has_entity_name = True
+    _attr_should_poll = False
 
     def __init__(self, hass, device, sensor_type, inside_temp_entity, humidi_entity, outside_temp_entity, wind_entity,
                  apparent_temp_source_entity, apparent_hum_source_entity, mold_calib_factor, decimal_places, unique_id, currentLocale):
@@ -216,8 +218,8 @@ class ExtendSensor(SensorBase):
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, "{}_{}".format(device.device_id, sensor_type), hass=hass)
         _LOGGER.debug("entity id : " + str(self.entity_id))
-        self._name = "{} {}".format(
-            device.device_id, TRANSLATION[currentLocale][sensor_type])
+        # self._name = "{} {}".format(
+        #     device.device_id, TRANSLATION[currentLocale][sensor_type])
         # self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
         self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
         self._state = None
@@ -516,9 +518,13 @@ class ExtendSensor(SensorBase):
 
     """Sensor Properties"""
     @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
+    def translation_key(self) -> str | None:
+        return self._sensor_type
+
+    # @property
+    # def name(self):
+    #     """Return the name of the sensor."""
+    #     return self._name
 
     @property
     def state(self):
@@ -535,10 +541,10 @@ class ExtendSensor(SensorBase):
         """Return the icon to use in the frontend, if any."""
         return self._icon
 
-    @property
-    def device_class(self) -> Optional[str]:
-        """Return the device class of the sensor."""
-        return self._device_class
+    # @property
+    # def device_class(self) -> Optional[str]:
+    #     """Return the device class of the sensor."""
+    #     return self._device_class
 
     @property
     def entity_picture(self):
@@ -551,11 +557,6 @@ class ExtendSensor(SensorBase):
         return self._unit_of_measurement
 
     @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
-
-    @property
     def unique_id(self) -> str:
         """Return a unique ID."""
         if self._unique_id is not None:
@@ -565,7 +566,6 @@ class ExtendSensor(SensorBase):
     def suggested_display_precision(self) -> int | None:
         return self._decimal_places if self._sensor_type in (STYPE_HUMIDI_STATE, STYPE_HEATINDEX_STATE) else None
         
-
     def update(self):
         """Update the state."""
         # while True:
@@ -584,14 +584,12 @@ class ExtendSensor(SensorBase):
                 value = self.computeHeatIndex(
                     self._inside_temp, self._humidity)
             elif self._sensor_type == STYPE_HUMIDI_STATE:
-                value = TRANSLATION[self._locale]["HUMIDI_STATE"][self.computeHumidiState(
-                    self._inside_temp, self._humidity)]
+                value = self.computeHumidiState(self._inside_temp, self._humidity)
             elif self._sensor_type == STYPE_A_HUMIDI:
                 value = self.computeAbsoluteHumidity(
                     self._inside_temp, self._humidity)
             elif self._sensor_type == STYPE_HEATINDEX_STATE:
-                value = TRANSLATION[self._locale]["HEAT_INDEX_STATE"][self.computeHeatIndexState(
-                    self._inside_temp, self._humidity)]
+                value = self.computeHeatIndexState(self._inside_temp, self._humidity)
             elif self._sensor_type == STYPE_R_HUMIDI:
                 value = self._humidity
             elif self._sensor_type == STYPE_INSIDE_TEMP:

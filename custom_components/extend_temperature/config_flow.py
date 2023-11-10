@@ -58,7 +58,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(CONF_DEVICE_NAME): str,
                     vol.Required(CONF_INSIDE_TEMP_ENTITY): selector({"entity": {}}),
                     vol.Required(CONF_HUMIDITY_ENTITY): selector({"entity": {}}),
-                    vol.Optional(CONF_SENSOR_LANGUAGE, default=DEFAULT_LANG): vol.In(TRANSLATION.keys()),
+                    #vol.Optional(CONF_SENSOR_LANGUAGE, default=DEFAULT_LANG): vol.In(TRANSLATION.keys()),
                 }
             ),
             errors=errors
@@ -86,9 +86,9 @@ def _get_options_schema(defaults) -> vol.Schema:
     _LOGGER.debug("defaults : " + str(defaults.options))
     return vol.Schema(
         {
-            vol.Required(CONF_INSIDE_TEMP_ENTITY, default=defaults.data.get(CONF_INSIDE_TEMP_ENTITY, None)
+            vol.Required(CONF_INSIDE_TEMP_ENTITY, default=defaults.options.get(CONF_INSIDE_TEMP_ENTITY) if defaults.options.get(CONF_INSIDE_TEMP_ENTITY, None) else defaults.data.get(CONF_INSIDE_TEMP_ENTITY, None)
             ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
-            vol.Required(CONF_HUMIDITY_ENTITY, default=defaults.data.get(CONF_HUMIDITY_ENTITY, None)
+            vol.Required(CONF_HUMIDITY_ENTITY, default=defaults.options.get(CONF_HUMIDITY_ENTITY, None) if defaults.options.get(CONF_HUMIDITY_ENTITY, None) else defaults.data.get(CONF_HUMIDITY_ENTITY, None)
             ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
             vol.Optional(
                 CONF_OUTSIDE_TEMP_ENTITY, 
@@ -116,7 +116,7 @@ def _get_options_schema(defaults) -> vol.Schema:
                          else None,
             ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
             vol.Optional(CONF_DECIMAL_PLACES, default=defaults.options.get(CONF_DECIMAL_PLACES, 2.0)): vol.All(vol.Coerce(int), vol.Range(0, 5)),
-            vol.Optional(CONF_SENSOR_LANGUAGE, default=defaults.options.get(CONF_SENSOR_LANGUAGE, DEFAULT_LANG)): vol.In(TRANSLATION.keys()),
+            #vol.Optional(CONF_SENSOR_LANGUAGE, default=defaults.options.get(CONF_SENSOR_LANGUAGE, DEFAULT_LANG)): vol.In(TRANSLATION.keys()),
         }
     )
 
