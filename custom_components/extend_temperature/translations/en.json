@@ -14,10 +14,10 @@
                 }
             }
         }
-   },
-   "options": {
-       "step": {
-           "init": {
+    },
+    "options": {
+        "step": {
+            "init": {
                 "title": "Extend Temperature sensor Options",
                 "data": {
                     "inside_temp_entity": "input inside temperature entity",
@@ -29,11 +29,11 @@
                     "mold_calib_factor": "input calibration factor(1~20)",
                     "decial_places": "input decimal places(0~5)",
                     "sensor_language": "Choose the language to be used for the sensor name"
-               }
-           }
-       }
-   },
-   "entity": {
+                }
+            }
+        }
+    },
+    "entity": {
         "sensor": {
             "inside_temperature": {
                 "name": "Inside Temperature"
