@@ -1,11 +1,8 @@
 """Constants for the Detailed Hello World Push integration."""
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
-from homeassistant.components.sensor import DEVICE_CLASS_TEMPERATURE
+from homeassistant.components.sensor import SensorDeviceClass
 
-from homeassistant.const import (
-    DEVICE_CLASS_TEMPERATURE, DEVICE_CLASS_HUMIDITY,
-)
 from homeassistant.helpers.selector import selector
 
 
@@ -44,17 +41,17 @@ STYPE_OUTSIDE_TEMP = "outside_temperature"
 STYPE_WIND_SPEED = "wind_speed"
 
 SENSOR_TYPES = {
-    STYPE_INSIDE_TEMP: [DEVICE_CLASS_TEMPERATURE, '°C'],
-    STYPE_R_HUMIDI: [DEVICE_CLASS_HUMIDITY, '%'],
-    STYPE_A_HUMIDI: [DEVICE_CLASS_HUMIDITY, 'g/m³'],
-    STYPE_HEATINDEX: [DEVICE_CLASS_TEMPERATURE, '°C'],
-    STYPE_APPARENT_TEMP: [DEVICE_CLASS_TEMPERATURE, '°C'],
-    STYPE_DEWPOINT: [DEVICE_CLASS_TEMPERATURE, '°C'],
+    STYPE_INSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],
+    STYPE_R_HUMIDI: [SensorDeviceClass.HUMIDITY, '%'],
+    STYPE_A_HUMIDI: [SensorDeviceClass.HUMIDITY, 'g/m³'],
+    STYPE_HEATINDEX: [SensorDeviceClass.TEMPERATURE, '°C'],
+    STYPE_APPARENT_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],
+    STYPE_DEWPOINT: [SensorDeviceClass.TEMPERATURE, '°C'],
     STYPE_HUMIDI_STATE: [DOMAIN + "__humidi_state", None],
     STYPE_HEATINDEX_STATE: [DOMAIN + "__heatindex_state", None],
     STYPE_WIND_SPEED: [None, 'm/s'],
-    STYPE_MOLD_INDICATOR: [DEVICE_CLASS_HUMIDITY, '%'],
-    STYPE_OUTSIDE_TEMP: [DEVICE_CLASS_TEMPERATURE, '°C'],
+    STYPE_MOLD_INDICATOR: [SensorDeviceClass.HUMIDITY, '%'],
+    STYPE_OUTSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],
 }
 
 DEFAULT_LANG = "Korean"

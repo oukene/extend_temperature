@@ -6,6 +6,6 @@
   "intergration_type": "entity",
   "dependencies": [],
   "codeowners": ["@oukene"],
-  "iot_class": "",
+  "iot_class": "sensor",
   "version": "1.6.4"
 }

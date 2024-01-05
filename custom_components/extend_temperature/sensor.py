@@ -7,7 +7,6 @@
 # battery), the unit_of_measurement should match what's expected.
 import logging
 import datetime
-from typing import Optional
 from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT, STATE_UNKNOWN,
     STATE_UNAVAILABLE, TEMP_FAHRENHEIT,
@@ -21,7 +20,7 @@ from homeassistant.components.sensor import SensorEntity
 
 from homeassistant.components.mold_indicator.sensor import ATTR_CRITICAL_TEMP, ATTR_DEWPOINT
 from .const import *
-from homeassistant.helpers.entity import Entity, async_generate_entity_id
+from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.event import async_track_state_change
 
 import math
