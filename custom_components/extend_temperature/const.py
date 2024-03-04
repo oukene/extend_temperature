@@ -20,6 +20,7 @@ CONF_MOLD_CALIB_FACTOR = "mold_calib_factor"
 CONF_APPARENT_TEMP_SOURCE_ENTITY = "apparent_temp_source_entity"
 CONF_APPARENT_HUM_SOURCE_ENTITY = "apparent_hum_source_entity"
 CONF_DECIMAL_PLACES = "decial_places"
+CONF_DECIMAL_CALC_TYPE = "decial_calc_type"
 CONF_SENSOR_LANGUAGE = 'sensor_language'
 
 ATTR_HUMIDITY = 'humidity'
@@ -39,6 +40,16 @@ STYPE_HEATINDEX_STATE = "heatindex_state"
 STYPE_MOLD_INDICATOR = "mold_indicator"
 STYPE_OUTSIDE_TEMP = "outside_temperature"
 STYPE_WIND_SPEED = "wind_speed"
+
+TRUNC = "trunc"
+ROUND = "round"
+CEIL = "ceil"
+
+DECIAL_CALC_TYPE = [
+    TRUNC,
+    ROUND,
+    CEIL,
+]
 
 SENSOR_TYPES = {
     STYPE_INSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],

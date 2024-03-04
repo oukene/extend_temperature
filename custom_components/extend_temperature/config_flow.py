@@ -7,41 +7,19 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector
+from homeassistant.helpers import selector as st
 from .const import *  # pylint:disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
-
-# This is the schema that used to display the UI to the user. This simple
-# schema has a single required host field, but it could include a number of fields
-# such as username, password etc. See other components in the HA core code for
-# further examples.
-# Note the input displayed to the user will be translated. See the
-# translations/<lang>.json file and strings.json. See here for further information:
-# https://developers.home-assistant.io/docs/config_entries_config_flow_handler/#translations
-# At the time of writing I found the translations created by the scaffold didn't
-# quite work as documented and always gave me the "Lokalise key references" string
-# (in square brackets), rather than the actual translated value. I did not attempt to
-# figure this out or look further into it.
-
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Hello World."""
 
     VERSION = 1
-    # Pick one of the available connection classes in homeassistant/config_entries.py
-    # This tells HA if it should be asking for updates, or it'll be notified of updates
-    # automatically. This example uses PUSH, as the dummy hub will notify HA of
-    # changes.
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
-        # This goes through the steps to take the user through the setup process.
-        # Using this it is possible to update the UI and prompt for additional
-        # information. This example provides a single form (built from `DATA_SCHEMA`),
-        # and when that has some validated input, it calls `async_create_entry` to
-        # actually create the HA config entry. Note the "title" value is returned by
-        # `validate_input` above.
         errors = {}
         
         if user_input is not None:
@@ -113,12 +91,18 @@ def _get_options_schema(defaults) -> vol.Schema:
                          else None,
             ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
             vol.Optional(CONF_DECIMAL_PLACES, default=defaults.options.get(CONF_DECIMAL_PLACES, 2.0)): vol.All(vol.Coerce(int), vol.Range(0, 5)),
-            #vol.Optional(CONF_SENSOR_LANGUAGE, default=defaults.options.get(CONF_SENSOR_LANGUAGE, DEFAULT_LANG)): vol.In(TRANSLATION.keys()),
+            vol.Optional(CONF_DECIMAL_CALC_TYPE, default=defaults.options.get(CONF_DECIMAL_CALC_TYPE, TRUNC)): st.SelectSelector(st.SelectSelectorConfig(
+                                                                                                    options=DECIAL_CALC_TYPE, 
+                                                                                                    custom_value=False, 
+                                                                                                    multiple=False,
+                                                                                                    mode=st.SelectSelectorMode.DROPDOWN,
+                                                                                                    translation_key=CONF_DECIMAL_CALC_TYPE
+                                                                                                )
+                                                                                            ),
         }
     )
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle a option flow for Naver Weather."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""

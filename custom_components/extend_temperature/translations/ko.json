@@ -9,8 +9,7 @@
                 "data": {
                     "device_name": "\uc0dd\uc131\ud560 \uae30\uae30\uc758 \uc774\ub984\uc744 \uc785\ub825\ud558\uc138\uc694",
                     "inside_temp_entity": "\ub0b4\ubd80 \uc628\ub3c4 \uad6c\uc131\uc694\uc18c\uc758 id\ub97c \uc785\ub825\ud558\uc138\uc694",
-                    "humidity_entity": "\uc0c1\ub300 \uc2b5\ub3c4 \uad6c\uc131\uc694\uc18c\uc758 id\ub97c \uc785\ub825\ud558\uc138\uc694",
-                    "sensor_language": "\uc13c\uc11c \uc774\ub984\uc5d0 \uc0ac\uc6a9\ud560 \uc5b8\uc5b4\ub97c \uc120\ud0dd\ud558\uc138\uc694"
+                    "humidity_entity": "\uc0c1\ub300 \uc2b5\ub3c4 \uad6c\uc131\uc694\uc18c\uc758 id\ub97c \uc785\ub825\ud558\uc138\uc694"
                 }
             }
         }
@@ -28,7 +27,7 @@
                     "wind_entity": "\ud48d\uc18d \uad6c\uc131\uc694\uc18c\uc758 id\ub97c \uc785\ub825\ud558\uc138\uc694(m/s)",
                     "mold_calib_factor": "\uacb0\ub85c \ubcf4\uc815\uac12\uc744 \uc785\ub825\ud558\uc138\uc694(1~20)",
                     "decial_places": "\ud45c\uc2dc\ud560 \uc18c\uc22b\uc810 \uc790\ub9ac\uc218\ub97c \uc785\ub825\ud558\uc138\uc694(0~5)",
-                    "sensor_language": "\uc13c\uc11c \uc774\ub984\uc5d0 \uc0ac\uc6a9\ud560 \uc5b8\uc5b4\ub97c \uc120\ud0dd\ud558\uc138\uc694"
+                    "decial_calc_type": "\uc18c\uc218\uc810 \ucc98\ub9ac \ubc29\ubc95"
                 }
             }
         }
@@ -82,6 +81,15 @@
             },
             "outside_temperature": {
                 "name": "\uc678\ubd80 \uc628\ub3c4"
+            }
+        }
+    },
+    "selector": {
+        "decial_calc_type": {
+            "options": {
+                "trunc": "\ubc84\ub9bc",
+                "round": "\ubc18\uc62c\ub9bc",
+                "ceil": "\uc62c\ub9bc"
             }
         }
     }

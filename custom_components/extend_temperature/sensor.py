@@ -12,6 +12,8 @@ from homeassistant.const import (
     STATE_UNAVAILABLE, TEMP_FAHRENHEIT,
 )
 
+from operator import eq
+
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 import asyncio
 
@@ -64,10 +66,6 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     apparent_hum_source_entity = config_entry.options.get(
         CONF_APPARENT_HUM_SOURCE_ENTITY)
     decimal_places = config_entry.options.get(CONF_DECIMAL_PLACES)
-    current_locale = config_entry.options.get(CONF_SENSOR_LANGUAGE)
-
-    if None == current_locale:
-        current_locale = DEFAULT_LANG
 
     if None == decimal_places:
         decimal_places = 2
@@ -98,6 +96,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         new_devices.append(
             ExtendSensor(
                 hass,
+                config_entry,
                 device,
                 sensor_type,
                 inside_temp_entity,
@@ -109,7 +108,6 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
                 mold_calib_factor,
                 decimal_places,
                 device.device_id + sensor_type,
-                current_locale
             )
         )
 
@@ -208,8 +206,8 @@ class ExtendSensor(SensorBase):
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, hass, device, sensor_type, inside_temp_entity, humidi_entity, outside_temp_entity, wind_entity,
-                 apparent_temp_source_entity, apparent_hum_source_entity, mold_calib_factor, decimal_places, unique_id, currentLocale):
+    def __init__(self, hass, config, device, sensor_type, inside_temp_entity, humidi_entity, outside_temp_entity, wind_entity,
+                 apparent_temp_source_entity, apparent_hum_source_entity, mold_calib_factor, decimal_places, unique_id):
         """Initialize the sensor."""
         super().__init__(device)
 
@@ -243,7 +241,7 @@ class ExtendSensor(SensorBase):
         self._wind = None
         self._apparent_temp_source = None
         self._apparent_hum_source = None
-        self._locale = currentLocale
+        self._decimal_calc_type = config.options.get(CONF_DECIMAL_CALC_TYPE)
 
         if sensor_type == STYPE_WIND_SPEED:
             self._icon = "mdi:weather-windy"
@@ -370,14 +368,14 @@ class ExtendSensor(SensorBase):
                 * (alpha + math.log(humidity / 100.0))
                 / (beta - math.log(humidity / 100.0))
             )
-        return round(dewpoint, self._decimal_places)
+        return self.decimal_correction(dewpoint)
 
     def computeCriticalTemp(self, inside_temp, outside_temp, calib_factor):
         _crit_temp = (
             outside_temp
             + (inside_temp - outside_temp) / calib_factor
         )
-        return round(_crit_temp, self._decimal_places)
+        return self.decimal_correction(_crit_temp)
 
     def computeMoldIndicator(self, inside_temp, outside_temp, humidity, calib_factor):
         """Calculate Mold Indicator"""
@@ -449,7 +447,7 @@ class ExtendSensor(SensorBase):
         elif humidity > 85 and fahrenheit >= 80 and fahrenheit <= 87:
             hi = hi + ((humidity - 85) * 0.1) * ((87 - fahrenheit) * 0.2)
 
-        return round(self.toCelsius(hi), self._decimal_places)
+        return self.decimal_correction(self.toCelsius(hi))
 
     def unique_id(self):
         """Return Unique ID string."""
@@ -492,7 +490,7 @@ class ExtendSensor(SensorBase):
         absHumidity *= humidity
         absHumidity *= 2.1674
         absHumidity /= absTemperature
-        return round(absHumidity, self._decimal_places)
+        return self.decimal_correction(absHumidity)
 
     def computeApparentTemperature(self, temperature, humidity, wind):
         T = temperature
@@ -513,7 +511,7 @@ class ExtendSensor(SensorBase):
             else:
                 apparent_temperature = T
 
-        return round(apparent_temperature, self._decimal_places)
+        return self.decimal_correction(apparent_temperature)
 
     """Sensor Properties"""
     @property
@@ -609,7 +607,7 @@ class ExtendSensor(SensorBase):
                 value = self._outside_temp
 
             if isNumber(value):
-                value = round(float(value), self._decimal_places)
+                value = self.decimal_correction(float(value))
 
             self._state = value
             self._extra_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
@@ -622,6 +620,14 @@ class ExtendSensor(SensorBase):
     async def async_update(self):
         """Update the state."""
         self.update()
+
+    def decimal_correction(self, value):
+        if eq(self._decimal_calc_type, ROUND):
+            return round(value, self._decimal_places)
+        elif eq(self._decimal_calc_type, CEIL):
+            return math.ceil(value * 10 ** self._decimal_places) / 10 ** self._decimal_places
+        else:
+            return math.trunc(value * 10 ** self._decimal_places) / 10 ** self._decimal_places
 
 
 def _is_real_number(value) -> bool:

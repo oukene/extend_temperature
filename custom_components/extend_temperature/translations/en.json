@@ -9,8 +9,7 @@
                 "data": {
                     "device_name": "input device name",
                     "inside_temp_entity": "input inside temperature entity",
-                    "humidity_entity": "input relative humidity entity",
-                    "sensor_language": "Choose the language to be used for the sensor name"
+                    "humidity_entity": "input relative humidity entity"
                 }
             }
         }
@@ -28,7 +27,7 @@
                     "wind_entity": "input wind entity(m/s)",
                     "mold_calib_factor": "input calibration factor(1~20)",
                     "decial_places": "input decimal places(0~5)",
-                    "sensor_language": "Choose the language to be used for the sensor name"
+                    "decial_calc_type": "Decimal point processing method"
                 }
             }
         }
@@ -85,6 +84,15 @@
             },
             "outside_temperature": {
                 "name": "Outside Temperature"
+            }
+        }
+    },
+    "selector": {
+        "decial_calc_type": {
+            "options": {
+                "trunc": "trunc",
+                "round": "round",
+                "ceil": "ceil"
             }
         }
     }
