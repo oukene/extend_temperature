@@ -289,7 +289,8 @@ class ExtendSensor(SensorBase):
                 if unit == TEMP_FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._apparent_temp_source = temp
-
+            else:
+                self._apparent_temp_source = STATE_UNKNOWN
             self.async_schedule_update_ha_state(True)
         except:
             ''
@@ -299,7 +300,8 @@ class ExtendSensor(SensorBase):
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
                 self._apparent_hum_source = float(new_state.state)
-
+            else:
+                self._apparent_hum_source = STATE_UNKNOWN
             self.async_schedule_update_ha_state(True)
         except:
             ''
@@ -314,7 +316,8 @@ class ExtendSensor(SensorBase):
                 if unit == TEMP_FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._inside_temp = temp
-
+            else:
+                self._inside_temp = STATE_UNKNOWN
             self.async_schedule_update_ha_state(True)
         except:
             ''
@@ -329,7 +332,8 @@ class ExtendSensor(SensorBase):
                 if unit == TEMP_FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._outside_temp = temp
-
+            else:
+                self._outside_temp = STATE_UNKNOWN
             self.async_schedule_update_ha_state(True)
         except:
             ''
@@ -339,7 +343,8 @@ class ExtendSensor(SensorBase):
             """Handle humidity device state changes."""
             if _is_valid_state(new_state):
                 self._humidity = float(new_state.state)
-
+            else:
+                self._humidity = STATE_UNKNOWN
             self.async_schedule_update_ha_state(True)
         except:
             ''
@@ -349,7 +354,8 @@ class ExtendSensor(SensorBase):
             """Handle humidity device state changes."""
             if _is_valid_state(new_state):
                 self._wind = float(new_state.state)
-
+            else:
+                self._wind = STATE_UNKNOWN
             self.async_schedule_update_ha_state(True)
         except:
             ''
@@ -571,7 +577,6 @@ class ExtendSensor(SensorBase):
         # if _is_valid_state(self.hass.states.get(self._inside_temp_entity)) and _is_valid_state(self.hass.states.get(self._humidi_entity)):
         #    _LOGGER.error("check valid end")
         #    break
-
         value = None
 
         if isNumber(self._inside_temp) and isNumber(self._humidity):
