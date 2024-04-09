@@ -267,8 +267,6 @@ class ExtendSensor(SensorBase):
         self._humidity = self.setStateListener(
             hass, self._humidi_entity, self.humidity_state_listener)
 
-        # self.hass.states.get(self._inside_temp_entity)
-
         self.update()
 
     def setStateListener(self, hass, entity, listener):
@@ -577,7 +575,7 @@ class ExtendSensor(SensorBase):
         # if _is_valid_state(self.hass.states.get(self._inside_temp_entity)) and _is_valid_state(self.hass.states.get(self._humidi_entity)):
         #    _LOGGER.error("check valid end")
         #    break
-        value = None
+        value = STATE_UNKNOWN
 
         if isNumber(self._inside_temp) and isNumber(self._humidity):
             if self._sensor_type == STYPE_DEWPOINT:
@@ -614,13 +612,14 @@ class ExtendSensor(SensorBase):
             if isNumber(value):
                 value = self.decimal_correction(float(value))
 
-            self._state = value
             self._extra_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
             self._extra_state_attributes[ATTR_HUMIDITY] = self._humidity
             if self._outside_temp != None:
                 self._extra_state_attributes[ATTR_OUTSIDE_TEMPERATURE] = self._outside_temp
             if self._wind != None:
                 self._extra_state_attributes[ATTR_WIND] = self._wind
+
+        self._state = value
 
     async def async_update(self):
         """Update the state."""
