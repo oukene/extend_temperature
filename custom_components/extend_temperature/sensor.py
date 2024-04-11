@@ -635,7 +635,10 @@ class ExtendSensor(SensorBase):
 
 
 def _is_real_number(value) -> bool:
-    return value != None and not math.isnan(value)
+    try:
+        return value != None and not math.isnan(value)
+    except:
+        return False
 
 
 def isNumber(s):
@@ -650,4 +653,7 @@ def isNumber(s):
 
 
 def _is_valid_state(state) -> bool:
-    return state and state.state != STATE_UNKNOWN and state.state != STATE_UNAVAILABLE and not math.isnan(float(state.state))
+    try:
+        return state and state.state != STATE_UNKNOWN and state.state != STATE_UNAVAILABLE and not math.isnan(float(state.state))
+    except:
+        return False
