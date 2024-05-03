@@ -623,7 +623,7 @@ class ExtendSensor(SensorBase):
 
     async def async_update(self):
         """Update the state."""
-        await self.update()
+        self.update()
 
     def decimal_correction(self, value):
         if eq(self._decimal_calc_type, ROUND):
