@@ -277,7 +277,7 @@ class ExtendSensor(SensorBase):
         if _is_valid_state(entity_state):
             return float(entity_state.state)
 
-    def apparent_temp_source_state_listener(self, entity, old_state, new_state):
+    async def apparent_temp_source_state_listener(self, entity, old_state, new_state):
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -289,22 +289,22 @@ class ExtendSensor(SensorBase):
                 self._apparent_temp_source = temp
             else:
                 self._apparent_temp_source = STATE_UNKNOWN
-            self.async_schedule_update_ha_state(True)
+            await self.async_schedule_update_ha_state(True)
         except:
             ''
 
-    def apparent_hum_source_state_listener(self, entity, old_state, new_state):
+    async def apparent_hum_source_state_listener(self, entity, old_state, new_state):
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
                 self._apparent_hum_source = float(new_state.state)
             else:
                 self._apparent_hum_source = STATE_UNKNOWN
-            self.async_schedule_update_ha_state(True)
+            await self.async_schedule_update_ha_state(True)
         except:
             ''
 
-    def inside_temp_state_listener(self, entity, old_state, new_state):
+    async def inside_temp_state_listener(self, entity, old_state, new_state):
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -316,11 +316,11 @@ class ExtendSensor(SensorBase):
                 self._inside_temp = temp
             else:
                 self._inside_temp = STATE_UNKNOWN
-            self.async_schedule_update_ha_state(True)
+            await self.async_schedule_update_ha_state(True)
         except:
             ''
 
-    def outside_temp_state_listener(self, entity, old_state, new_state):
+    async def outside_temp_state_listener(self, entity, old_state, new_state):
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -332,29 +332,29 @@ class ExtendSensor(SensorBase):
                 self._outside_temp = temp
             else:
                 self._outside_temp = STATE_UNKNOWN
-            self.async_schedule_update_ha_state(True)
+            await self.async_schedule_update_ha_state(True)
         except:
             ''
 
-    def humidity_state_listener(self, entity, old_state, new_state):
+    async def humidity_state_listener(self, entity, old_state, new_state):
         try:
             """Handle humidity device state changes."""
             if _is_valid_state(new_state):
                 self._humidity = float(new_state.state)
             else:
                 self._humidity = STATE_UNKNOWN
-            self.async_schedule_update_ha_state(True)
+            await self.async_schedule_update_ha_state(True)
         except:
             ''
 
-    def wind_state_listener(self, entity, old_state, new_state):
+    async def wind_state_listener(self, entity, old_state, new_state):
         try:
             """Handle humidity device state changes."""
             if _is_valid_state(new_state):
                 self._wind = float(new_state.state)
             else:
                 self._wind = STATE_UNKNOWN
-            self.async_schedule_update_ha_state(True)
+            await self.async_schedule_update_ha_state(True)
         except:
             ''
 
@@ -623,7 +623,7 @@ class ExtendSensor(SensorBase):
 
     async def async_update(self):
         """Update the state."""
-        self.update()
+        await self.update()
 
     def decimal_correction(self, value):
         if eq(self._decimal_calc_type, ROUND):
