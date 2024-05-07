@@ -9,7 +9,7 @@ import logging
 import datetime
 from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT, STATE_UNKNOWN,
-    STATE_UNAVAILABLE, TEMP_FAHRENHEIT,
+    STATE_UNAVAILABLE, UnitOfTemperature
 )
 
 from operator import eq
@@ -284,7 +284,7 @@ class ExtendSensor(SensorBase):
                 unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
                 temp = util.convert(new_state.state, float)
                 # convert to celsius if necessary
-                if unit == TEMP_FAHRENHEIT:
+                if unit == UnitOfTemperature.FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._apparent_temp_source = temp
             else:
@@ -311,7 +311,7 @@ class ExtendSensor(SensorBase):
                 unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
                 temp = util.convert(new_state.state, float)
                 # convert to celsius if necessary
-                if unit == TEMP_FAHRENHEIT:
+                if unit == UnitOfTemperature.FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._inside_temp = temp
             else:
@@ -327,7 +327,7 @@ class ExtendSensor(SensorBase):
                 unit = new_state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
                 temp = util.convert(new_state.state, float)
                 # convert to celsius if necessary
-                if unit == TEMP_FAHRENHEIT:
+                if unit == UnitOfTemperature.FAHRENHEIT:
                     temp = util.temperature.fahrenheit_to_celsius(temp)
                 self._outside_temp = temp
             else:
