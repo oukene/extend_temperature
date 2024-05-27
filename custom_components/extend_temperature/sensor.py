@@ -13,7 +13,7 @@ from homeassistant.const import (
 )
 
 from operator import eq
-
+from homeassistant.core import Event, EventStateChangedData, callback
 from homeassistant.components.sensor import ENTITY_ID_FORMAT
 import asyncio
 
@@ -23,7 +23,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.mold_indicator.sensor import ATTR_CRITICAL_TEMP, ATTR_DEWPOINT
 from .const import *
 from homeassistant.helpers.entity import async_generate_entity_id
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
 
 import math
 
@@ -270,14 +270,18 @@ class ExtendSensor(SensorBase):
         self.update()
 
     def setStateListener(self, hass, entity, listener):
-        hass.data[DOMAIN]["listener"].append(async_track_state_change(
+        hass.data[DOMAIN]["listener"].append(async_track_state_change_event(
             self.hass, entity, listener))
 
         entity_state = self.hass.states.get(entity)
         if _is_valid_state(entity_state):
             return float(entity_state.state)
 
-    async def apparent_temp_source_state_listener(self, entity, old_state, new_state):
+    @callback
+    async def apparent_temp_source_state_listener(self, event: Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -293,7 +297,11 @@ class ExtendSensor(SensorBase):
         except:
             ''
 
-    async def apparent_hum_source_state_listener(self, entity, old_state, new_state):
+    @callback
+    async def apparent_hum_source_state_listener(self, event: Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -304,7 +312,11 @@ class ExtendSensor(SensorBase):
         except:
             ''
 
-    async def inside_temp_state_listener(self, entity, old_state, new_state):
+    @callback
+    async def inside_temp_state_listener(self, event: Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -320,7 +332,11 @@ class ExtendSensor(SensorBase):
         except:
             ''
 
-    async def outside_temp_state_listener(self, entity, old_state, new_state):
+    @callback
+    async def outside_temp_state_listener(self, event:Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
@@ -336,7 +352,11 @@ class ExtendSensor(SensorBase):
         except:
             ''
 
-    async def humidity_state_listener(self, entity, old_state, new_state):
+    @callback
+    async def humidity_state_listener(self, event:Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             """Handle humidity device state changes."""
             if _is_valid_state(new_state):
@@ -347,7 +367,11 @@ class ExtendSensor(SensorBase):
         except:
             ''
 
-    async def wind_state_listener(self, entity, old_state, new_state):
+    @callback
+    async def wind_state_listener(self, event:Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             """Handle humidity device state changes."""
             if _is_valid_state(new_state):
