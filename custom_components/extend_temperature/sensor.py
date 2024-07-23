@@ -1,10 +1,4 @@
 """Platform for sensor integration."""
-# This file shows the setup for the sensors associated with the cover.
-# They are setup in the same way with the call to the async_setup_entry function
-# via HA from the module __init__. Each sensor has a device_class, this tells HA how
-# to display it in the UI (for know types). The unit_of_measurement property tells HA
-# what the unit is, so it can display the correct range. For predefined types (such as
-# battery), the unit_of_measurement should match what's expected.
 import logging
 import datetime
 from homeassistant.const import (
@@ -31,11 +25,6 @@ MAGNUS_K2 = 17.62
 MAGNUS_K3 = 243.12
 
 _LOGGER = logging.getLogger(__name__)
-
-# See cover.py for more details.
-# Note how both entities for each roller sensor (battry and illuminance) are added at
-# the same time to the same list. This way only a single async_add_devices call is
-# required.
 
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -114,9 +103,6 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     if new_devices:
         async_add_devices(new_devices)
 
-# This base class shows the common properties and methods for a sensor as used in this
-# example. See each sensor for further details about properties and methods that
-# have been overridden.
 
 
 class SensorBase(SensorEntity):
@@ -128,10 +114,6 @@ class SensorBase(SensorEntity):
         """Initialize the sensor."""
         self._device = device
 
-    # To link this entity to the cover device, this property must return an
-    # identifiers value matching that used in the cover, but no other information such
-    # as name. If name is returned, this entity will then also become a device in the
-    # HA UI.
     @property
     def device_info(self):
         """Information about this entity/device."""
