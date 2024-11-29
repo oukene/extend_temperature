@@ -90,6 +90,7 @@ def _get_options_schema(defaults) -> vol.Schema:
                          if CONF_WIND_ENTITY in defaults.options
                          else None,
             ): selector({"entity": {"domain": ["sensor", "input_number"]}}),
+            vol.Optional(CONF_MOLD_CALIB_FACTOR, default=defaults.options.get(CONF_MOLD_CALIB_FACTOR, 2.0)): vol.All(vol.Coerce(float), vol.Range(0, 20)),
             vol.Optional(CONF_DECIMAL_PLACES, default=defaults.options.get(CONF_DECIMAL_PLACES, 2.0)): vol.All(vol.Coerce(int), vol.Range(0, 5)),
             vol.Optional(CONF_DECIMAL_CALC_TYPE, default=defaults.options.get(CONF_DECIMAL_CALC_TYPE, TRUNC)): st.SelectSelector(st.SelectSelectorConfig(
                                                                                                     options=DECIAL_CALC_TYPE, 
