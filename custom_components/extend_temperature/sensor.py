@@ -203,7 +203,6 @@ class ExtendSensor(SensorBase):
         self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
         self._state = None
         self._extra_state_attributes = {}
-        self._icon = None
         self._entity_picture = None
         self._inside_temp_entity = inside_temp_entity
         self._humidi_entity = humidi_entity
@@ -214,6 +213,7 @@ class ExtendSensor(SensorBase):
         self._mold_calib_factor = mold_calib_factor
         self._decimal_places = decimal_places
         self._device_class = SENSOR_TYPES[sensor_type][0]
+        self._attr_icon = SENSOR_TYPES[sensor_type][2]
         self._sensor_type = sensor_type
         self._inside_temp = None
         self._outside_temp = None
@@ -224,9 +224,6 @@ class ExtendSensor(SensorBase):
         self._apparent_temp_source = None
         self._apparent_hum_source = None
         self._decimal_calc_type = config.options.get(CONF_DECIMAL_CALC_TYPE)
-
-        if sensor_type == STYPE_WIND_SPEED:
-            self._icon = "mdi:weather-windy"
 
         if self._wind_entity != None:
             self._wind = self.setStateListener(
@@ -542,11 +539,6 @@ class ExtendSensor(SensorBase):
     def extra_state_attributes(self):
         """Return the state attributes."""
         return self._extra_state_attributes
-
-    @property
-    def icon(self):
-        """Return the icon to use in the frontend, if any."""
-        return self._icon
 
     # @property
     # def device_class(self) -> Optional[str]:

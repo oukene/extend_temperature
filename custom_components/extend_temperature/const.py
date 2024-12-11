@@ -52,17 +52,17 @@ DECIAL_CALC_TYPE = [
 ]
 
 SENSOR_TYPES = {
-    STYPE_INSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],
-    STYPE_R_HUMIDI: [SensorDeviceClass.HUMIDITY, '%'],
-    STYPE_A_HUMIDI: [SensorDeviceClass.HUMIDITY, 'g/m³'],
-    STYPE_HEATINDEX: [SensorDeviceClass.TEMPERATURE, '°C'],
-    STYPE_APPARENT_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],
-    STYPE_DEWPOINT: [SensorDeviceClass.TEMPERATURE, '°C'],
-    STYPE_HUMIDI_STATE: [DOMAIN + "__humidi_state", None],
-    STYPE_HEATINDEX_STATE: [DOMAIN + "__heatindex_state", None],
-    STYPE_WIND_SPEED: [None, 'm/s'],
-    STYPE_MOLD_INDICATOR: [SensorDeviceClass.HUMIDITY, '%'],
-    STYPE_OUTSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C'],
+    STYPE_INSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C', 'mdi:thermometer'],
+    STYPE_R_HUMIDI: [SensorDeviceClass.HUMIDITY, '%', 'mdi:water-percent'],
+    STYPE_A_HUMIDI: [SensorDeviceClass.HUMIDITY, 'g/m³', 'mdi:water-percent'],
+    STYPE_HEATINDEX: [SensorDeviceClass.TEMPERATURE, '°C', 'mdi:sun-thermometer'],
+    STYPE_APPARENT_TEMP: [SensorDeviceClass.TEMPERATURE, '°C', 'mdi:thermometer'],
+    STYPE_DEWPOINT: [SensorDeviceClass.TEMPERATURE, '°C', 'mdi:water-thermometer'],
+    STYPE_HUMIDI_STATE: [DOMAIN + "__humidi_state", None, 'mdi:water-percent'],
+    STYPE_HEATINDEX_STATE: [DOMAIN + "__heatindex_state", None, 'mdi:sun-thermometer'],
+    STYPE_WIND_SPEED: [None, 'm/s', 'mdi:weather-windy'],
+    STYPE_MOLD_INDICATOR: [SensorDeviceClass.HUMIDITY, '%', 'mdi:snowflake-alert'],
+    STYPE_OUTSIDE_TEMP: [SensorDeviceClass.TEMPERATURE, '°C', 'mdi:thermometer'],
 }
 
 DEFAULT_LANG = "Korean"
