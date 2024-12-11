@@ -200,10 +200,9 @@ class ExtendSensor(SensorBase):
         # self._name = "{} {}".format(
         #     device.device_id, TRANSLATION[currentLocale][sensor_type])
         # self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
-        self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
+        self._attr_unit_of_measurement = SENSOR_TYPES[sensor_type][1]
+        self._attr_extra_state_attributes = {}
         self._state = None
-        self._extra_state_attributes = {}
-        self._entity_picture = None
         self._inside_temp_entity = inside_temp_entity
         self._humidi_entity = humidi_entity
         self._outside_temp_entity = outside_temp_entity
@@ -212,13 +211,13 @@ class ExtendSensor(SensorBase):
         self._wind_entity = wind_entity
         self._mold_calib_factor = mold_calib_factor
         self._decimal_places = decimal_places
-        self._device_class = SENSOR_TYPES[sensor_type][0]
+        self._attr_device_class = SENSOR_TYPES[sensor_type][0]
         self._attr_icon = SENSOR_TYPES[sensor_type][2]
         self._sensor_type = sensor_type
         self._inside_temp = None
         self._outside_temp = None
         self._humidity = None
-        self._unique_id = unique_id
+        self._attr_unique_id = unique_id
         self._device = device
         self._wind = None
         self._apparent_temp_source = None
@@ -456,10 +455,6 @@ class ExtendSensor(SensorBase):
 
         return self.decimal_correction(self.toCelsius(hi))
 
-    def unique_id(self):
-        """Return Unique ID string."""
-        return self.unique_id
-
     def computeHumidiState(self, temperature, humidity):
         """https://en.wikipedia.org/wiki/Dew_point"""
         dewPoint = self.computeDewPoint(temperature, humidity)
@@ -536,30 +531,9 @@ class ExtendSensor(SensorBase):
         return self._state
 
     @property
-    def extra_state_attributes(self):
-        """Return the state attributes."""
-        return self._extra_state_attributes
-
-    # @property
-    # def device_class(self) -> Optional[str]:
-    #     """Return the device class of the sensor."""
-    #     return self._device_class
-
-    @property
-    def entity_picture(self):
-        """Return the entity_picture to use in the frontend, if any."""
-        return self._entity_picture
-
-    @property
     def unit_of_measurement(self):
         """Return the unit_of_measurement of the device."""
-        return self._unit_of_measurement
-
-    @property
-    def unique_id(self) -> str:
-        """Return a unique ID."""
-        if self._unique_id is not None:
-            return self._unique_id
+        return self._attr_unit_of_measurement
 
     @property
     def suggested_display_precision(self) -> int | None:
@@ -600,9 +574,9 @@ class ExtendSensor(SensorBase):
             elif self._sensor_type == STYPE_MOLD_INDICATOR and isNumber(self._outside_temp):
                 value = self.computeMoldIndicator(
                     self._inside_temp, self._outside_temp, self._humidity, self._mold_calib_factor)
-                self._extra_state_attributes[ATTR_DEWPOINT] = self.computeDewPoint(
+                self._attr_extra_state_attributes[ATTR_DEWPOINT] = self.computeDewPoint(
                     self._inside_temp, self._humidity)
-                self._extra_state_attributes[ATTR_CRITICAL_TEMP] = self.computeCriticalTemp(
+                self._attr_extra_state_attributes[ATTR_CRITICAL_TEMP] = self.computeCriticalTemp(
                     self._inside_temp, self._outside_temp, self._mold_calib_factor)
             elif self._sensor_type == STYPE_OUTSIDE_TEMP and isNumber(self._outside_temp):
                 value = self._outside_temp
@@ -610,12 +584,12 @@ class ExtendSensor(SensorBase):
             if isNumber(value):
                 value = self.decimal_correction(float(value))
 
-            self._extra_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
-            self._extra_state_attributes[ATTR_HUMIDITY] = self._humidity
+            self._attr_extra_state_attributes[ATTR_INSIDE_TEMPERATURE] = self._inside_temp
+            self._attr_extra_state_attributes[ATTR_HUMIDITY] = self._humidity
             if self._outside_temp != None:
-                self._extra_state_attributes[ATTR_OUTSIDE_TEMPERATURE] = self._outside_temp
+                self._attr_extra_state_attributes[ATTR_OUTSIDE_TEMPERATURE] = self._outside_temp
             if self._wind != None:
-                self._extra_state_attributes[ATTR_WIND] = self._wind
+                self._attr_extra_state_attributes[ATTR_WIND] = self._wind
 
         self._state = value
 
