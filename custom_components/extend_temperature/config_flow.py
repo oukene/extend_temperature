@@ -108,6 +108,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
+        _LOGGER.debug("config_entries data : " + str(self.config_entry.data))
 
     async def async_step_init(self, user_input=None) -> FlowResult:
         """Handle options flow."""
@@ -116,6 +117,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_show_form(step_id="init", data_schema=None)
         if user_input is not None:
             _LOGGER.debug("before async_create_entry")
+            self.hass.config_entries.async_update_entry(conf, data=
+                {
+                    CONF_DEVICE_NAME: conf.data[CONF_DEVICE_NAME],
+                    CONF_INSIDE_TEMP_ENTITY: user_input.get(CONF_INSIDE_TEMP_ENTITY),
+                    CONF_HUMIDITY_ENTITY: user_input.get(CONF_HUMIDITY_ENTITY)
+                }
+            )
             return self.async_create_entry(title=conf.data[CONF_DEVICE_NAME], data=user_input)
 
         return self.async_show_form(
