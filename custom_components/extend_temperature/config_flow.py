@@ -52,7 +52,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Handle a option flow."""
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
 
 @callback  # type: ignore[misc]
@@ -105,26 +105,26 @@ def _get_options_schema(defaults) -> vol.Schema:
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
 
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
-        _LOGGER.debug("config_entries data : " + str(self.config_entry.data))
-
+    # def __init__(self, config_entry: config_entries.ConfigEntry):
+    #     """Initialize options flow."""
+    #     self.config_entry = config_entry
+    #     _LOGGER.debug("config_entries data : " + str(self.config_entry.data))
+    
     async def async_step_init(self, user_input=None) -> FlowResult:
         """Handle options flow."""
-        conf = self.config_entry
-        if conf.source == config_entries.SOURCE_IMPORT:
+        #conf = self.config_entry
+        if self.config_entry.source == config_entries.SOURCE_IMPORT:
             return self.async_show_form(step_id="init", data_schema=None)
         if user_input is not None:
             _LOGGER.debug("before async_create_entry")
-            self.hass.config_entries.async_update_entry(conf, data=
+            self.hass.config_entries.async_update_entry(self.config_entry, data=
                 {
-                    CONF_DEVICE_NAME: conf.data[CONF_DEVICE_NAME],
+                    CONF_DEVICE_NAME: self.config_entry.data[CONF_DEVICE_NAME],
                     CONF_INSIDE_TEMP_ENTITY: user_input.get(CONF_INSIDE_TEMP_ENTITY),
                     CONF_HUMIDITY_ENTITY: user_input.get(CONF_HUMIDITY_ENTITY)
                 }
             )
-            return self.async_create_entry(title=conf.data[CONF_DEVICE_NAME], data=user_input)
+            return self.async_create_entry(title=self.config_entry.data[CONF_DEVICE_NAME], data=user_input)
 
         return self.async_show_form(
             step_id="init",
